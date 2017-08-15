@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 80%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script>
+			const OFFSET = -2;
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.8);
+			var material = new THREE.MeshLambertMaterial( { color: 0xff00a1 } );
+			var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
+			
+
+			function addcube (position) {
+				var cube = new THREE.Mesh( geometry, material );
+				cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+				scene.add( cube );
+			}
+
+			function addline (from, to, scene) {
+				var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(from.x, from.y, from.z));
+				geometry.vertices.push(new THREE.Vector3(to.x, to.y, to.z));
+				var line = new THREE.Line(geometry, material_line);
+				scene.add( line );
+			}
+			
+			addcube({x:1,y:2,z:3});
+			addcube({x:1,y:3,z:3});
+			addcube({x:1,y:4,z:0});
+			addcube({x:4,y:4,z:4});
+			addcube({x:0,y:0,z:0});
+
+			var size_x = 5;
+			var size_z = 5;
+			var size_y = 5;
+			var unit = 1;
+			for (var z_index = 0; z_index < size_z; z_index++) {
+				for (var index = 0; index < size_x; index++) {
+					addline({
+							x:size_x - 1 + OFFSET,
+							y:(index * unit) + OFFSET,
+							z:(z_index * unit) + OFFSET
+						},{
+							x:OFFSET,
+							y:(index * unit) + OFFSET,
+							z:(z_index * unit) + OFFSET
+						},scene);
+				}
+			}
+			for (var z_index = 0; z_index < size_z; z_index++) {
+				for (var index = 0; index < size_x; index++) {
+					addline({
+							x:(index * unit) + OFFSET,
+							y:size_y - 1 + OFFSET,
+							z:(z_index * unit) + OFFSET
+						},{
+							x:(index * unit) + OFFSET,
+							y:OFFSET,
+							z:(z_index * unit) + OFFSET
+						},scene);
+				}
+			}
+
+			addline({x:10,y:0,z:0},{x:0,y:0,z:0},scene);
+			addline({x:0,y:10,z:0},{x:0,y:0,z:0},scene);
+			addline({x:0,y:0,z:10},{x:0,y:0,z:0},scene);
+
+			camera.position.set(0, 0, 10);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+			controls.enableDamping = true;
+			controls.dampingFactor = 0.25;
+			controls.enableZoom = false;
+
+			var light = new THREE.AmbientLight( 0x777777 ); // soft white light
+			scene.add( light );
+			var directionalLight = new THREE.DirectionalLight( 0x0000ff, 0.8 );
+			directionalLight.position.set(1,1,0);
+			scene.add( directionalLight );
+			var directionalLight2 = new THREE.DirectionalLight( 0xff0000, 0.8 );
+			directionalLight2.position.set(0,1,1);
+			scene.add( directionalLight2 );
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				controls.update();
+
+				renderer.render(scene, camera);
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
