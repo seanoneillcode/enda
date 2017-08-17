@@ -1,0 +1,9 @@
+general:
+  artifacts:
+    - "build_artifacts"
+deployment:
+  prod:
+    branch: master
+    heroku:
+      appname: todo-grad-project
+      
