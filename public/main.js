@@ -10,6 +10,10 @@ var playerName;
 var playerId;
 var currentGame;
 
+var mouse = new THREE.Vector2(), INTERSECTED;
+var camera, renderer, scene, raycaster;
+var mouseDownLock = false;
+
 form.onsubmit = function(event) {
     var name = todoTitle.value;
     addPlayer(name, function(response) {
@@ -127,23 +131,73 @@ function reloadTodoList() {
     });
 }
 
+function pickMouse() {
+    raycaster.setFromCamera( mouse, camera );
+    var intersects = raycaster.intersectObjects( scene.children );
+    if ( intersects.length > 0 ) {
+        if ( INTERSECTED != intersects[ 0 ].object ) {
+            if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+            INTERSECTED = intersects[ 0 ].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex( 0xffffff );
+        }
+    } else {
+        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+        INTERSECTED = null;
+    }
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
+function onDocumentMouseUp( event ) {
+    mouseDownLock = false;
+    event.preventDefault();
+}
+function onDocumentMouseDown( event ) {
+    if (mouseDownLock) {
+        return;
+    }
+    mouseDownLock = true;
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    pickMouse();
+}
+
 function startDrawing(currentGame) {
     const OFFSET = -2;
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
 
-    var renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer();
+    raycaster = new THREE.Raycaster();;
+    
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
+    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+    document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+    window.addEventListener( 'resize', onWindowResize, false );
 
     var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.8);
+    var small_geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2);
     var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
     var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
+    var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
     var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 
 
     function addcube (position, material) {
         var cube = new THREE.Mesh( geometry, material );
+        cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+        scene.add( cube );
+    }
+
+    function addpositioncube (position) {
+        var cube = new THREE.Mesh( small_geometry, small_material );
         cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
         scene.add( cube );
     }
@@ -165,40 +219,17 @@ function startDrawing(currentGame) {
         addcube({x:x,y:y,z:z}, material);
     }
 
-    var size_x = 5;
-    var size_z = 5;
-    var size_y = 5;
+    var x_size = 5;
+    var y_size = 5;
+    var z_size = 5;
     var unit = 1;
-    for (var z_index = 0; z_index < size_z; z_index++) {
-        for (var index = 0; index < size_x; index++) {
-            addline({
-                    x:size_x - 1 + OFFSET,
-                    y:(index * unit) + OFFSET,
-                    z:(z_index * unit) + OFFSET
-                },{
-                    x:OFFSET,
-                    y:(index * unit) + OFFSET,
-                    z:(z_index * unit) + OFFSET
-                },scene);
+    for (var x_index = 0; x_index < x_size; x_index++) {
+        for (var y_index = 0; y_index < y_size; y_index++) {
+            for (var z_index = 0; z_index < z_size; z_index++) {
+                addpositioncube({x:x_index,y:y_index,z:z_index})
+            }       
         }
     }
-    for (var z_index = 0; z_index < size_z; z_index++) {
-        for (var index = 0; index < size_x; index++) {
-            addline({
-                    x:(index * unit) + OFFSET,
-                    y:size_y - 1 + OFFSET,
-                    z:(z_index * unit) + OFFSET
-                },{
-                    x:(index * unit) + OFFSET,
-                    y:OFFSET,
-                    z:(z_index * unit) + OFFSET
-                },scene);
-        }
-    }
-
-    addline({x:10,y:0,z:0},{x:0,y:0,z:0},scene);
-    addline({x:0,y:10,z:0},{x:0,y:0,z:0},scene);
-    addline({x:0,y:0,z:10},{x:0,y:0,z:0},scene);
 
     camera.position.set(0, 0, 10);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -221,6 +252,8 @@ function startDrawing(currentGame) {
         requestAnimationFrame( animate );
 
         controls.update();
+
+        
 
         renderer.render(scene, camera);
     };
