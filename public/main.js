@@ -1,6 +1,7 @@
 var todoList = document.getElementById("todo-list");
-var form = document.getElementById("todo-form");
+var form = document.getElementById("login-form");
 var joinForm = document.getElementById("join-form");
+var logoutForm = document.getElementById("logout-form");
 var todoTitle = document.getElementById("new-todo");
 var currentPlayer = document.getElementById("current-player");
 var error = document.getElementById("error");
@@ -15,13 +16,13 @@ form.onsubmit = function(event) {
         console.log(response);
         playerName = response.name;
         playerId = response.id;
-        //reloadTodoList();
-        
+        window.localStorage.setItem('playerName', playerName);
     });
     todoTitle.value = "";
     playerName = name;
     currentPlayer.textContent = name;
-    form.remove();
+    form.style.display = 'none';
+    logoutForm.style.display = 'block';
     event.preventDefault();
 };
 
@@ -31,7 +32,6 @@ joinForm.onsubmit = function(event) {
         return;
     }
     joinGame(playerId, function() {
-        //reloadTodoList();
         getCurrentGame(function (response) {
             currentGame = response;
             startDrawing(currentGame);
@@ -39,6 +39,14 @@ joinForm.onsubmit = function(event) {
     });
     event.preventDefault();
 };
+
+logoutForm.onsubmit = function(event) {
+    window.localStorage.removeItem('playerName');
+    form.style.display = 'block';
+    currentPlayer.textContent = '';
+    event.preventDefault();
+};
+
 
 function joinGame(playerId, callback) {
     var createRequest = new XMLHttpRequest();
@@ -221,4 +229,17 @@ function startDrawing(currentGame) {
     animate();
 }
 
-//reloadTodoList();
+// get log in already data
+var localPlayerName = window.localStorage.getItem("playerName");
+if (localPlayerName) {
+    addPlayer(localPlayerName, function(response) {
+        console.log(response);
+        playerName = response.name;
+        playerId = response.id;
+    });
+    playerName = localPlayerName;
+    currentPlayer.textContent = localPlayerName;
+    form.style.display = 'none';
+} else {
+    logoutForm.style.display = 'none';
+}
