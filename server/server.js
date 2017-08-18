@@ -1,6 +1,6 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-
+var _ = require("lodash");
 
 module.exports = function(port, middleware, callback) {
     var app = express();
@@ -15,16 +15,7 @@ module.exports = function(port, middleware, callback) {
     var todos = [];
     var players = [];
     var games = [];
-
-    // Create
-    // app.post("/api/todo", function(req, res) {
-    //     var todo = req.body;
-    //     todo.id = latestId.toString();
-    //     latestId++;
-    //     todos.push(todo);
-    //     res.set("Location", "/api/todo/" + todo.id);
-    //     res.sendStatus(201);
-    // });
+    
 
     // { name : "foo" }
     app.post("/api/player", function(req, res) {
@@ -49,10 +40,6 @@ module.exports = function(port, middleware, callback) {
         res.json(getGame(req.params.id));
     });
 
-    // app.get("/api/todo", function(req, res) {
-    //     res.json(todos);
-    // });
-
     // Delete
     // app.delete("/api/todo/:id", function(req, res) {
     //     var id = req.params.id;
@@ -69,30 +56,46 @@ module.exports = function(port, middleware, callback) {
 
     function addPlayerToGame (player) {
         var gamesThatNeedAPlayer = games.filter(function(game) {
-            return !game.player_one || !game.player_two;
+            return game.player_one === undefined || game.player_two === undefined;
         });
-        if (gamesThatNeedAPlayer.size > 0) {
-            newGame = gamesThatNeedAPlayer[0];
-            if (!newGame.player_one) {
+        if (gamesThatNeedAPlayer.length > 0) {
+            console.log("found a game that needs a player");
+            var newGame = gamesThatNeedAPlayer[0];
+            if (newGame.player_one === undefined) {
                 newGame.player_one = player;
             } else {
                 newGame.player_two = player;
             }
         } else {
-            newGameId = latestId.toString();
+            console.log("no games found that has a space. making a new one");
+            var newGameId = latestId.toString();
             latestId++;
             games.push({
                 id : newGameId,
                 player_one : player,
                 player_two : undefined,
-                currentPlayer : player_one
+                currentPlayer : player,
+                pieces : [
+                    {
+                        type : "king",
+                        pos : { x:0 , y:2, z:4 },
+                        owner : "player_one"
+                    },
+                    {
+                        type : "king",
+                        pos : { x:4 , y:2, z:0 },
+                        owner : "player_two",
+                        deepCloneTest: 0
+                    }
+               ]
             });
         }
     }
 
     function getGame(playerId) {
         return games.filter(function(game) {
-            return game.player_one.id === playerId || game.player_two.id === playerId;
+            return (game.player_one && (game.player_one.id === playerId)) || 
+            (game.player_two && (game.player_two.id === playerId));
         })[0];
     }
 
@@ -101,12 +104,6 @@ module.exports = function(port, middleware, callback) {
             return player.id === id;
         })[0];
     }
-
-    // function getTodo(id) {
-    //     return todos.filter(function(todo) {
-    //         return todo.id === id;
-    //     })[0];
-    // }
 
     var server = app.listen(port, callback);
 

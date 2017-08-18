@@ -5,6 +5,12 @@ body {
     margin: 0;
 }
 
+canvas { 
+    width: 80%;
+    height: 100%
+    left: 200px;
+}
+
 header {
     background-color: #4CAF50;
     padding: 0.5em 1em;

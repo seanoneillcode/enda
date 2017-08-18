@@ -4,17 +4,23 @@
         <meta charset="utf-8">
         <title>ENDA</title>
         <link href="main.css" rel="stylesheet" type="text/css">
+        <script src="js/three.js"></script>
+        <script src="js/OrbitControls.js"></script>
+
     </head>
     <body>
         <header>
             <h1>ENDA game</h1>
         </header>
         <section>
-            <h2 id="todo-list-placeholder">Loading...</h2>
+            <p id="current-player"></p>
             <ul id="todo-list"></ul>
             <form id="todo-form">
-                <input id="new-todo" placeholder="What needs to be done?" autofocus>
-                <input id="submit-todo" type="submit" value="Create">
+                <input id="new-todo" placeholder="Enter Name" autofocus>
+                <input id="submit-todo" type="submit" value="Submit">
+            </form>
+            <form id="join-form">
+                <input id="submit-join" type="submit" value="Join Game">
             </form>
             <div id="error"></div>
         </section>
