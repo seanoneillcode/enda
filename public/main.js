@@ -137,11 +137,12 @@ function startDrawing(currentGame) {
     document.body.appendChild( renderer.domElement );
 
     var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.8);
-    var material = new THREE.MeshLambertMaterial( { color: 0xff00a1 } );
+    var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
+    var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
     var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 
 
-    function addcube (position) {
+    function addcube (position, material) {
         var cube = new THREE.Mesh( geometry, material );
         cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
         scene.add( cube );
@@ -156,15 +157,13 @@ function startDrawing(currentGame) {
     }
 
     for (var i = currentGame.pieces.length - 1; i >= 0; i--) {
-        var x = currentGame.pieces[i].pos.x;
-        var y = currentGame.pieces[i].pos.y;
-        var z = currentGame.pieces[i].pos.z;
-        addcube({x:x,y:y,z:z});
+        var currentPiece = currentGame.pieces[i];
+        var x = currentPiece.pos.x;
+        var y = currentPiece.pos.y;
+        var z = currentPiece.pos.z;
+        var material = currentPiece.owner == "player_one" ? red_material : blue_material;
+        addcube({x:x,y:y,z:z}, material);
     }
-    // addcube({x:1,y:3,z:3});
-    // addcube({x:1,y:4,z:0});
-    // addcube({x:4,y:4,z:4});
-    // addcube({x:0,y:0,z:0});
 
     var size_x = 5;
     var size_z = 5;

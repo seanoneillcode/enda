@@ -78,15 +78,44 @@ module.exports = function(port, middleware, callback) {
                 pieces : [
                     {
                         type : "king",
-                        pos : { x:0 , y:2, z:4 },
+                        pos : { x:2 , y:0, z:4 },
+                        owner : "player_one"
+                    },
+                    {
+                        type : "castle",
+                        pos : { x:1 , y:0, z:3 },
+                        owner : "player_one"
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:2 , y:0, z:3 },
+                        owner : "player_one"
+                    },
+                    {
+                        type : "knight",
+                        pos : { x:3 , y:0, z:3 },
                         owner : "player_one"
                     },
                     {
                         type : "king",
-                        pos : { x:4 , y:2, z:0 },
-                        owner : "player_two",
-                        deepCloneTest: 0
-                    }
+                        pos : { x:2 , y:4, z:0 },
+                        owner : "player_two"
+                    },
+                    {
+                        type : "castle",
+                        pos : { x:1 , y:4, z:1 },
+                        owner : "player_two"
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:2 , y:4, z:1 },
+                        owner : "player_two"
+                    },
+                    {
+                        type : "knight",
+                        pos : { x:3 , y:4, z:1 },
+                        owner : "player_two"
+                    },
                ]
             });
         }
