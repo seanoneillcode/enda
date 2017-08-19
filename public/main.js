@@ -14,6 +14,9 @@ var mouse = new THREE.Vector2(), INTERSECTED;
 var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 
+var lastSelected;
+var localPieces = [];
+
 form.onsubmit = function(event) {
     var name = todoTitle.value;
     addPlayer(name, function(response) {
@@ -135,16 +138,31 @@ function pickMouse() {
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
     if ( intersects.length > 0 ) {
-        if ( INTERSECTED != intersects[ 0 ].object ) {
-            if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-            INTERSECTED = intersects[ 0 ].object;
-            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-            INTERSECTED.material.emissive.setHex( 0xffffff );
+        if ( lastSelected != intersects[ 0 ].object ) {
+            if ( lastSelected ) {
+                var localPiece = getLocalPieceFromObject(lastSelected);
+                localPiece.selected = false;
+            }
+            lastSelected = intersects[ 0 ].object;
+            var localPiece = getLocalPieceFromObject(lastSelected);
+            localPiece.selected = false;
         }
     } else {
-        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-        INTERSECTED = null;
+        if ( lastSelected ) {
+            var localPiece = getLocalPieceFromObject(lastSelected);
+            localPiece.selected = false;
+        }
+        lastSelected = null;
     }
+}
+
+function getLocalPieceFromObject(object) {
+    console.log("get local");
+    console.log(object);
+    return localPieces.filter(function(piece) {
+            console.log(piece);
+            return piece.obj === object;
+        })[0];
 }
 
 function onWindowResize() {
@@ -186,6 +204,7 @@ function startDrawing(currentGame) {
     var small_geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2);
     var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
     var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
+    var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
     var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
     var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 
@@ -194,6 +213,7 @@ function startDrawing(currentGame) {
         var cube = new THREE.Mesh( geometry, material );
         cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
         scene.add( cube );
+        return cube;
     }
 
     function addpositioncube (position) {
@@ -216,7 +236,12 @@ function startDrawing(currentGame) {
         var y = currentPiece.pos.y;
         var z = currentPiece.pos.z;
         var material = currentPiece.owner == "player_one" ? red_material : blue_material;
-        addcube({x:x,y:y,z:z}, material);
+        var obj = addcube({x:x,y:y,z:z}, material);
+        localPieces.push({
+            obj : obj,
+            piece : currentPiece,
+            selected: false
+        });
     }
 
     var x_size = 5;
@@ -250,11 +275,18 @@ function startDrawing(currentGame) {
 
     var animate = function () {
         requestAnimationFrame( animate );
-
         controls.update();
-
-        
-
+        localPieces.forEach (function(localPiece) {
+            if (localPiece.selected) {
+                localPiece.material = selected_material;
+            } else {
+                if (localPiece.piece.owner == "player_one") {
+                    localPiece.material = red_material;
+                } else {
+                    localPiece.material = blue_material;
+                }
+            }
+        });
         renderer.render(scene, camera);
     };
 
