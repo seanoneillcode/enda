@@ -13,6 +13,7 @@ var currentGame;
 var mouse = new THREE.Vector2(), INTERSECTED;
 var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
+var dirtyRender = true;
 
 var lastSelected;
 var localPieces = [];
@@ -135,32 +136,31 @@ function reloadTodoList() {
 }
 
 function pickMouse() {
+    dirtyRender = true;
+    var localPiece;
+    if ( lastSelected ) {
+        lastSelected.selected = false;
+        lastSelected = null;
+    }
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
     if ( intersects.length > 0 ) {
-        if ( lastSelected != intersects[ 0 ].object ) {
-            if ( lastSelected ) {
-                var localPiece = getLocalPieceFromObject(lastSelected);
-                localPiece.selected = false;
-            }
-            lastSelected = intersects[ 0 ].object;
-            var localPiece = getLocalPieceFromObject(lastSelected);
-            localPiece.selected = false;
+        console.log("interection occured")
+        intersectedObject = intersects[ 0 ].object;
+        lastSelected = getLocalPieceFromObject(intersectedObject);
+        if (lastSelected) {
+            lastSelected.selected = true;
+            console.log(lastSelected);
+        } else {
+            console.log("didnt get local piece from object");
         }
     } else {
-        if ( lastSelected ) {
-            var localPiece = getLocalPieceFromObject(lastSelected);
-            localPiece.selected = false;
-        }
-        lastSelected = null;
+           console.log(" no interection")
     }
 }
 
 function getLocalPieceFromObject(object) {
-    console.log("get local");
-    console.log(object);
     return localPieces.filter(function(piece) {
-            console.log(piece);
             return piece.obj === object;
         })[0];
 }
@@ -200,8 +200,8 @@ function startDrawing(currentGame) {
 
     window.addEventListener( 'resize', onWindowResize, false );
 
-    var geometry = new THREE.BoxGeometry( 0.8, 0.8, 0.8);
-    var small_geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2);
+    var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
+    var small_geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
     var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
     var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
     var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
@@ -276,17 +276,23 @@ function startDrawing(currentGame) {
     var animate = function () {
         requestAnimationFrame( animate );
         controls.update();
-        localPieces.forEach (function(localPiece) {
-            if (localPiece.selected) {
-                localPiece.material = selected_material;
-            } else {
-                if (localPiece.piece.owner == "player_one") {
-                    localPiece.material = red_material;
+        if (dirtyRender) {
+            console.log("render is dirty");
+            localPieces.forEach (function(localPiece) {
+                if (localPiece.selected) {
+                    console.log("found selected piece");
+                    localPiece.obj.material = selected_material;
                 } else {
-                    localPiece.material = blue_material;
+                    console.log("found normal piece");
+                    if (localPiece.piece.owner == "player_one") {
+                        localPiece.obj.material = red_material;
+                    } else {
+                        localPiece.obj.material = blue_material;
+                    }
                 }
-            }
-        });
+            });
+            dirtyRender = false;
+        }
         renderer.render(scene, camera);
     };
 
