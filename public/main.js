@@ -17,6 +17,173 @@ var dirtyRender = true;
 
 var lastSelected;
 var localPieces = [];
+var visibleMoves = [];
+var move_material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
+var geometry = new THREE.BoxGeometry( 0.9, 0.8, 0.9);
+var move_geometry = new THREE.BoxGeometry( 0.8, 0.9, 0.8);
+const OFFSET = -2;
+var x_size = 5;
+var y_size = 5;
+var z_size = 5;
+
+
+function moveSingleScalar(i, pos) {
+    var moves = [];
+    moves.push({
+        x:pos.x + i,
+        y:pos.y,
+        z:pos.z
+    });
+    moves.push({
+        x:pos.x,
+        y:pos.y + i,
+        z:pos.z
+    });
+    moves.push({
+        x:pos.x,
+        y:pos.y,
+        z:pos.z + i
+    });
+    moves.push({
+        x: pos.x -i,
+        y:pos.y,
+        z:pos.z
+    });
+    moves.push({
+        x:pos.x,
+        y:pos.y - i,
+        z:pos.z
+    });
+    moves.push({
+        x:pos.x,
+        y:pos.y,
+        z:pos.z - i
+    });
+    return moves;
+}
+
+function isLegalMove(actualMove, owner) {
+    var isLegal = true;
+    if (actualMove.x >= x_size) {
+        isLegal = false;
+    }
+    if (actualMove.x < 0) {
+        isLegal = false;
+    }
+    if (actualMove.y >= y_size) {
+        isLegal = false;
+    }
+    if (actualMove.y < 0) {
+        isLegal = false;
+    }
+    if (actualMove.z >= z_size) {
+        isLegal = false;
+    }
+    if (actualMove.z < 0) {
+        isLegal = false;
+    }
+    var ownerPieces = getPiecesForOwner(owner);
+    ownerPieces.forEach(function(ownerPiece) {
+        if (isEqualPos(ownerPiece.piece.pos, actualMove)) {
+            isLegal = false;
+        }
+    });
+    return isLegal;
+}
+
+function moveRangeScalar(input, pos, owner) {
+    var moves = [];
+    var blocked = false
+    for (var i = pos.x + 1; i <= 5 && !blocked; i++) {
+        var p = {
+            x:i,
+            y:pos.y,
+            z:pos.z
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    var blocked = false
+    for (var i = pos.y + 1; i <= 5 && !blocked; i++) {
+        var p = {
+            x:pos.x,
+            y:i,
+            z:pos.z
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    var blocked = false
+    for (var i = pos.z + 1; i <= 5 && !blocked; i++) {
+        var p = {
+            x:pos.x,
+            y:pos.y,
+            z:i
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    blocked = false;
+    for (var i = pos.x - 1; i >= 0 && !blocked; i--) {
+        var p = {
+            x:i,
+            y:pos.y,
+            z:pos.z
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    blocked = false;
+    for (var i = pos.y - 1; i >= 0 && !blocked; i--) {
+        var p = {
+            x:pos.x,
+            y:i,
+            z:pos.z
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    blocked = false;
+    for (var i = pos.z - 1; i >= 0 && !blocked; i--) {
+        var p = {
+            x:pos.x,
+            y:pos.y,
+            z:i
+        };
+        if (!isLegalMove(p, owner)) {
+            blocked = true;
+        } else {
+            moves.push(p);
+        }
+    }
+    return moves;
+}
+
+var legalMoves = {
+    "king" : [],
+    "castle": [
+        { f: moveRangeScalar, i: 1}
+    ],
+    "knight": [],
+    "pawn": [
+        { f: moveSingleScalar, i: 1 }
+    ]
+};
 
 form.onsubmit = function(event) {
     var name = todoTitle.value;
@@ -135,6 +302,57 @@ function reloadTodoList() {
     });
 }
 
+function addMoveCube (position) {
+    var cube = new THREE.Mesh( move_geometry, move_material );
+    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+    scene.add( cube );
+    return cube;
+}
+
+function isEqualPos(a, b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+function getPiecesForOwner(owner) {
+    var owner_pieces = [];
+    localPieces.forEach (function(localPiece) {
+        if (localPiece.piece.owner == owner) {
+            owner_pieces.push(localPiece);
+        }
+    });
+    return owner_pieces;
+}
+
+
+
+function generateMoves(piece) {
+    var type = piece.type;
+    var currentPos = piece.pos;
+    var moves = [];
+    var abstractMoves = legalMoves[type];
+    abstractMoves.forEach(function(abstractMove) {
+        var f = abstractMove.f;
+        var input = abstractMove.i;
+        var potentialMoves = f.apply(this, [input, currentPos, piece.owner]);
+        console.log(potentialMoves);
+        potentialMoves.forEach(function(potentialMove) {
+            console.log(currentPos, potentialMove);
+            var actualMove = potentialMove;
+            if (isLegalMove(actualMove, piece.owner)) {
+                moves.push(actualMove);
+            }
+        });
+    });
+    return moves;
+}
+
+function clearVisibleMoves() {
+    visibleMoves.forEach(function(move) {
+        scene.remove(move.obj);
+    });
+    visibleMoves = [];
+}
+
 function pickMouse() {
     dirtyRender = true;
     var localPiece;
@@ -145,17 +363,23 @@ function pickMouse() {
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
     if ( intersects.length > 0 ) {
-        console.log("interection occured")
         intersectedObject = intersects[ 0 ].object;
         lastSelected = getLocalPieceFromObject(intersectedObject);
         if (lastSelected) {
             lastSelected.selected = true;
-            console.log(lastSelected);
-        } else {
-            console.log("didnt get local piece from object");
         }
-    } else {
-           console.log(" no interection")
+    }
+    clearVisibleMoves();
+    if (lastSelected) {
+        var moves = generateMoves(lastSelected.piece);
+        moves.forEach(function(move) {
+            // todo if move ends up on emeny - dont add a cube, add something special to indicate
+            var cube = addMoveCube(move);
+            visibleMoves.push({
+                obj: cube,
+                pos: move
+            });
+        });
     }
 }
 
@@ -186,7 +410,6 @@ function onDocumentMouseDown( event ) {
 }
 
 function startDrawing(currentGame) {
-    const OFFSET = -2;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
 
@@ -200,7 +423,7 @@ function startDrawing(currentGame) {
 
     window.addEventListener( 'resize', onWindowResize, false );
 
-    var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
+    
     var small_geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
     var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
     var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
@@ -244,9 +467,6 @@ function startDrawing(currentGame) {
         });
     }
 
-    var x_size = 5;
-    var y_size = 5;
-    var z_size = 5;
     var unit = 1;
     for (var x_index = 0; x_index < x_size; x_index++) {
         for (var y_index = 0; y_index < y_size; y_index++) {
@@ -266,10 +486,10 @@ function startDrawing(currentGame) {
 
     var light = new THREE.AmbientLight( 0x777777 ); // soft white light
     scene.add( light );
-    var directionalLight = new THREE.DirectionalLight( 0x0000ff, 0.8 );
+    var directionalLight = new THREE.DirectionalLight( 0x4488ff, 0.8 );
     directionalLight.position.set(1,1,0);
     scene.add( directionalLight );
-    var directionalLight2 = new THREE.DirectionalLight( 0xff0000, 0.8 );
+    var directionalLight2 = new THREE.DirectionalLight( 0xff8844, 0.8 );
     directionalLight2.position.set(0,1,1);
     scene.add( directionalLight2 );
 
@@ -277,13 +497,10 @@ function startDrawing(currentGame) {
         requestAnimationFrame( animate );
         controls.update();
         if (dirtyRender) {
-            console.log("render is dirty");
             localPieces.forEach (function(localPiece) {
                 if (localPiece.selected) {
-                    console.log("found selected piece");
                     localPiece.obj.material = selected_material;
                 } else {
-                    console.log("found normal piece");
                     if (localPiece.piece.owner == "player_one") {
                         localPiece.obj.material = red_material;
                     } else {
