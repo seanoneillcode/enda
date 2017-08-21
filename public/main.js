@@ -174,12 +174,55 @@ function moveRangeScalar(input, pos, owner) {
     return moves;
 }
 
+function getPosCopy(old) {
+    var newpos = {};
+    newpos.x = old.x;
+    newpos.y = old.y;
+    newpos.z = old.z;
+    return newpos;    
+}
+
+function moveKnight(input, pos, owner) {
+    var moves = [];
+    var dims = ['x', 'y', 'z'];
+    var dindex = 0;
+    // rotate through dims
+    for (dindex = 0; dindex < 3; dindex++) {
+        var current_dim = dims[dindex];
+        dims
+            .filter(function(dim) {
+                return dim !== current_dim;
+            })
+            .forEach(function(odim) {
+                var first = getPosCopy(pos);
+                first[current_dim] = pos[current_dim] + 2;
+                first[odim] = pos[odim] + 1;
+                moves.push(first);
+                first = getPosCopy(pos);
+                first[current_dim] = pos[current_dim] + 2;
+                first[odim] = pos[odim] - 1;
+                moves.push(first);
+                first = getPosCopy(pos);
+                first[current_dim] = pos[current_dim] - 2;
+                first[odim] = pos[odim] + 1;
+                moves.push(first);
+                first = getPosCopy(pos);
+                first[current_dim] = pos[current_dim] - 2;
+                first[odim] = pos[odim] - 1;
+                moves.push(first);
+            });
+    };
+    return moves;
+}
+
 var legalMoves = {
     "king" : [],
     "castle": [
         { f: moveRangeScalar, i: 1}
     ],
-    "knight": [],
+    "knight": [
+        { f: moveKnight, i: 1}
+    ],
     "pawn": [
         { f: moveSingleScalar, i: 1 }
     ]
@@ -188,7 +231,6 @@ var legalMoves = {
 form.onsubmit = function(event) {
     var name = todoTitle.value;
     addPlayer(name, function(response) {
-        console.log(response);
         playerName = response.name;
         playerId = response.id;
         window.localStorage.setItem('playerName', playerName);
@@ -277,8 +319,6 @@ function getCurrentGame(callback) {
     createRequest.open("GET", "/api/player/" + playerId + "/currentGame");
     createRequest.onload = function() {
         if (this.status === 200) {
-            console.log(this.responseText);
-
             callback(JSON.parse(this.responseText));
         } else {
             error.textContent = "Failed to get list. Server returned " + this.status + " - " + this.responseText;
@@ -334,9 +374,7 @@ function generateMoves(piece) {
         var f = abstractMove.f;
         var input = abstractMove.i;
         var potentialMoves = f.apply(this, [input, currentPos, piece.owner]);
-        console.log(potentialMoves);
         potentialMoves.forEach(function(potentialMove) {
-            console.log(currentPos, potentialMove);
             var actualMove = potentialMove;
             if (isLegalMove(actualMove, piece.owner)) {
                 moves.push(actualMove);
@@ -520,7 +558,6 @@ function startDrawing(currentGame) {
 var localPlayerName = window.localStorage.getItem("playerName");
 if (localPlayerName) {
     addPlayer(localPlayerName, function(response) {
-        console.log(response);
         playerName = response.name;
         playerId = response.id;
     });

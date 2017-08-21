@@ -108,7 +108,7 @@ module.exports = function(port, middleware, callback) {
                     },
                     {
                         type : "castle",
-                        pos : { x:1 , y:4, z:1 },
+                        pos : { x:3 , y:4, z:1 },
                         owner : "player_two",
                         id: 5
                     },
@@ -120,7 +120,7 @@ module.exports = function(port, middleware, callback) {
                     },
                     {
                         type : "knight",
-                        pos : { x:3 , y:4, z:1 },
+                        pos : { x:1 , y:4, z:1 },
                         owner : "player_two",
                         id: 7
                     }
