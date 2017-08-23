@@ -14,6 +14,7 @@ var mouse = new THREE.Vector2(), INTERSECTED;
 var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
+var mouseDrag = false;
 
 var lastSelected;
 var localPieces = [];
@@ -394,14 +395,21 @@ function clearVisibleMoves() {
 function pickMouse() {
     dirtyRender = true;
     var localPiece;
+    raycaster.setFromCamera( mouse, camera );
+    var intersects = raycaster.intersectObjects( scene.children );
+    var tempSelected = lastSelected;
+
     if ( lastSelected ) {
         lastSelected.selected = false;
         lastSelected = null;
     }
-    raycaster.setFromCamera( mouse, camera );
-    var intersects = raycaster.intersectObjects( scene.children );
+    
     if ( intersects.length > 0 ) {
         intersectedObject = intersects[ 0 ].object;
+        movementSelected = getSelectedMovementFromObject(intersectedObject);
+        if (movementSelected) {
+            movePiece(tempSelected, movementSelected);
+        }
         lastSelected = getLocalPieceFromObject(intersectedObject);
         if (lastSelected) {
             lastSelected.selected = true;
@@ -421,6 +429,21 @@ function pickMouse() {
     }
 }
 
+function movePiece(object, to) {
+    var newPos = to.pos;
+    console.log(object, to);
+    object.piece.pos.x = newPos.x;
+    object.piece.pos.y = newPos.y;
+    object.piece.pos.z = newPos.z;
+    object.obj.position.set(newPos.x + OFFSET,newPos.y + OFFSET,newPos.z + OFFSET);
+}
+
+function getSelectedMovementFromObject(object) {
+    return visibleMoves.filter(function(piece) {
+            return piece.obj === object;
+        })[0];
+}
+
 function getLocalPieceFromObject(object) {
     return localPieces.filter(function(piece) {
             return piece.obj === object;
@@ -433,18 +456,29 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 function onDocumentMouseUp( event ) {
+    console.log(event)
     mouseDownLock = false;
+    if (!mouseDrag) {
+        pickMouse();
+    }
     event.preventDefault();
+}
+function onDocumentMouseMove( event ) {
+    if (mouseDownLock) {
+        mouseDrag = true;
+    }
 }
 function onDocumentMouseDown( event ) {
     if (mouseDownLock) {
         return;
     }
+    mouseDrag = false;
     mouseDownLock = true;
+    console.log(event)
     event.preventDefault();
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    pickMouse();
+    
 }
 
 function startDrawing(currentGame) {
@@ -458,6 +492,7 @@ function startDrawing(currentGame) {
     document.body.appendChild( renderer.domElement );
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
 
