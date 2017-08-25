@@ -41,12 +41,16 @@ module.exports = function(port, middleware, callback) {
         var game = getGame(req.params.id);
         game.moves.push(stateChange);
         var piece = getPiece(stateChange.piece, game.currentState);
-        if (piece) {
-            console.log("found piece");
+        var existingPiece = getPieceAtPosition(stateChange.toPos, game.currentState);
+        if (existingPiece) {
+            console.log("found existingPiece");
+            game.currentState = filterPiece(existingPiece, game.currentState);
+            game.takenPieces.push(existingPiece);
         }
         piece.pos.x = stateChange.toPos.x;
         piece.pos.y = stateChange.toPos.y;
         piece.pos.z = stateChange.toPos.z;
+        checkIfGameOver(game);
         res.sendStatus(201);
     });
 
@@ -95,6 +99,9 @@ module.exports = function(port, middleware, callback) {
                 player_two : undefined,
                 currentPlayer : player,
                 moves: [],
+                takenPieces: [],
+                metaState: "playing",
+                winner: undefined,
                 currentState : [
                     {
                         type : "king",
@@ -149,9 +156,32 @@ module.exports = function(port, middleware, callback) {
         }
     }
 
+    function checkIfGameOver(game) {
+        var anyKingTaken = game.takenPieces.filter(function(piece) {
+            return piece.type === 'king';
+        })[0];
+        if (anyKingTaken) {
+            game.metaState = "victory";
+            game.winner = anyKingTaken.owner === "player_two" ? "player_one" : "player_two";
+        }
+        var kings = game.currentState.filter(function(piece) {
+            return piece.type === 'king';
+        });
+        if (kings.length == game.currentState.length) {
+            game.metaState = "draw";
+            game.winner = "nobody";
+        }
+    }
+
     function getGame(id) {
         return games.filter(function(game) {
             return game.id === id;
+        })[0];
+    }
+
+    function getPieceAtPosition(position, state) {
+        return state.filter(function(piece) {
+            return equalPos(piece.pos, position);
         })[0];
     }
 
@@ -176,6 +206,12 @@ module.exports = function(port, middleware, callback) {
         return currentState.filter(function (otherPiece) {
             return piece.id === otherPiece.id;
         })[0];
+    }
+
+    function filterPiece(piece, state) {
+        return state.filter(function (otherPiece) {
+            return piece.id !== otherPiece.id;
+        });
     }
 
     var server = app.listen(port, callback);

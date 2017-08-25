@@ -5,6 +5,8 @@ var logoutForm = document.getElementById("logout-form");
 var todoTitle = document.getElementById("new-todo");
 var currentPlayer = document.getElementById("current-player");
 var error = document.getElementById("error");
+var gameMessage = document.getElementById("game-message");
+
 
 var playerName;
 var playerId;
@@ -15,6 +17,7 @@ var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
 var mouseDrag = false;
+var gameIsVictored = false;
 
 var lastSelected;
 var localPieces = [];
@@ -430,6 +433,9 @@ function clearVisibleMoves() {
 }
 
 function pickMouse() {
+    if (currentGame.metaState !== "playing") {
+        return;
+    }
     dirtyRender = true;
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
@@ -467,10 +473,6 @@ function pickMouse() {
 }
 
 function movePiece(object, to) {
-    // object.piece.pos.x = newPos.x;
-    // object.piece.pos.y = newPos.y;
-    // object.piece.pos.z = newPos.z;
-    // object.obj.position.set(newPos.x + OFFSET,newPos.y + OFFSET,newPos.z + OFFSET);
     makeMoveServer(object.piece, to.pos, function() {
         console.log("client req to move a piece");
         getLatestState();
@@ -495,7 +497,6 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 function onDocumentMouseUp( event ) {
-    console.log(event)
     mouseDownLock = false;
     if (!mouseDrag) {
         pickMouse();
@@ -513,11 +514,17 @@ function onDocumentMouseDown( event ) {
     }
     mouseDrag = false;
     mouseDownLock = true;
-    console.log(event)
     event.preventDefault();
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     
+}
+
+function victoryTheGame(game) {
+    console.log(game);
+    var message = game[game.winner].name === playerName ? "You Win!" : "You Lose";
+    gameMessage.textContent = "" + message + "\nwell done " + game[game.winner].name;
+    gameIsVictored = true;
 }
 
 function addcube (position, material) {
@@ -646,8 +653,6 @@ if (localPlayerName) {
 
 function getLatestState() {
     if (currentGame) {
-        console.log("we have current game");
-        console.log(currentGame.id);
         getCurrentGame(function (game) {
             if (game.moves.length != currentGame.moves.length) {
                 console.log("number of moves changed");
@@ -655,9 +660,10 @@ function getLatestState() {
                 console.log(game);
                 createCurrentGameVisuals(currentGame);
             }
+            if (game.metaState === "victory" && !gameIsVictored) {
+                victoryTheGame(game);
+            }
         });
-    } else {
-        console.log("no game yet");
     }
 
 }
