@@ -22,6 +22,12 @@ var visibleMoves = [];
 var move_material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
 var geometry = new THREE.BoxGeometry( 0.9, 0.8, 0.9);
 var move_geometry = new THREE.BoxGeometry( 0.8, 0.9, 0.8);
+var small_geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
+var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
+var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
+var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
+var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
+var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 const OFFSET = -2;
 var x_size = 5;
 var y_size = 5;
@@ -282,6 +288,26 @@ function joinGame(playerId, callback) {
     };
 }
 
+function makeMoveServer(piece, toPos, callback) {
+    var createRequest = new XMLHttpRequest();
+    createRequest.open("POST", "/api/game/" + currentGame.id);
+    createRequest.setRequestHeader("Content-type", "application/json");
+    console.log(piece, toPos);
+    createRequest.send(JSON.stringify({
+        stateChange: {
+            piece: piece,
+            toPos: toPos
+        }
+    }));
+    createRequest.onload = function() {
+        if (this.status === 201) {
+            callback();
+        } else {
+            error.textContent = "Failed to join game. Server returned " + this.status + " - " + this.responseText;
+        }
+    };
+}
+
 function addPlayer(name, callback) {
     var createRequest = new XMLHttpRequest();
     createRequest.open("POST", "/api/player");
@@ -301,6 +327,19 @@ function addPlayer(name, callback) {
 function getTodoList(callback) {
     var createRequest = new XMLHttpRequest();
     createRequest.open("GET", "/api/todo");
+    createRequest.onload = function() {
+        if (this.status === 200) {
+            callback(JSON.parse(this.responseText));
+        } else {
+            error.textContent = "Failed to get list. Server returned " + this.status + " - " + this.responseText;
+        }
+    };
+    createRequest.send();
+}
+
+function getCurrentGame(callback) {
+    var createRequest = new XMLHttpRequest();
+    createRequest.open("GET", "/api/game/" + currentGame.id);
     createRequest.onload = function() {
         if (this.status === 200) {
             callback(JSON.parse(this.responseText));
@@ -363,8 +402,6 @@ function getPiecesForOwner(owner) {
     });
     return owner_pieces;
 }
-
-
 
 function generateMoves(piece) {
     var type = piece.type;
@@ -430,12 +467,14 @@ function pickMouse() {
 }
 
 function movePiece(object, to) {
-    var newPos = to.pos;
-    console.log(object, to);
-    object.piece.pos.x = newPos.x;
-    object.piece.pos.y = newPos.y;
-    object.piece.pos.z = newPos.z;
-    object.obj.position.set(newPos.x + OFFSET,newPos.y + OFFSET,newPos.z + OFFSET);
+    // object.piece.pos.x = newPos.x;
+    // object.piece.pos.y = newPos.y;
+    // object.piece.pos.z = newPos.z;
+    // object.obj.position.set(newPos.x + OFFSET,newPos.y + OFFSET,newPos.z + OFFSET);
+    makeMoveServer(object.piece, to.pos, function() {
+        console.log("client req to move a piece");
+        getLatestState();
+    });
 }
 
 function getSelectedMovementFromObject(object) {
@@ -481,6 +520,49 @@ function onDocumentMouseDown( event ) {
     
 }
 
+function addcube (position, material) {
+    var cube = new THREE.Mesh( geometry, material );
+    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+    scene.add( cube );
+    return cube;
+}
+
+function addpositioncube (position) {
+    var cube = new THREE.Mesh( small_geometry, small_material );
+    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+    scene.add( cube );
+}
+
+function addline (from, to, scene) {
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(from.x, from.y, from.z));
+    geometry.vertices.push(new THREE.Vector3(to.x, to.y, to.z));
+    var line = new THREE.Line(geometry, material_line);
+    scene.add( line );
+}
+
+function createCurrentGameVisuals(currentGame) {
+    localPieces.forEach(function (localPiece) {
+        scene.remove(localPiece.obj);
+    });
+    localPieces = [];
+
+    for (var i = currentGame.currentState.length - 1; i >= 0; i--) {
+        var currentPiece = currentGame.currentState[i];
+        var x = currentPiece.pos.x;
+        var y = currentPiece.pos.y;
+        var z = currentPiece.pos.z;
+        var material = currentPiece.owner == "player_one" ? red_material : blue_material;
+        var obj = addcube({x:x,y:y,z:z}, material);
+        localPieces.push({
+            obj : obj,
+            piece : currentPiece,
+            selected: false
+        });
+    }
+    dirtyRender = true;
+}
+
 function startDrawing(currentGame) {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
@@ -495,50 +577,9 @@ function startDrawing(currentGame) {
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
-
     
-    var small_geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
-    var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
-    var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
-    var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
-    var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
-    var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 
-
-    function addcube (position, material) {
-        var cube = new THREE.Mesh( geometry, material );
-        cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
-        scene.add( cube );
-        return cube;
-    }
-
-    function addpositioncube (position) {
-        var cube = new THREE.Mesh( small_geometry, small_material );
-        cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
-        scene.add( cube );
-    }
-
-    function addline (from, to, scene) {
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(from.x, from.y, from.z));
-        geometry.vertices.push(new THREE.Vector3(to.x, to.y, to.z));
-        var line = new THREE.Line(geometry, material_line);
-        scene.add( line );
-    }
-
-    for (var i = currentGame.pieces.length - 1; i >= 0; i--) {
-        var currentPiece = currentGame.pieces[i];
-        var x = currentPiece.pos.x;
-        var y = currentPiece.pos.y;
-        var z = currentPiece.pos.z;
-        var material = currentPiece.owner == "player_one" ? red_material : blue_material;
-        var obj = addcube({x:x,y:y,z:z}, material);
-        localPieces.push({
-            obj : obj,
-            piece : currentPiece,
-            selected: false
-        });
-    }
+    createCurrentGameVisuals(currentGame);
 
     var unit = 1;
     for (var x_index = 0; x_index < x_size; x_index++) {
@@ -602,3 +643,23 @@ if (localPlayerName) {
 } else {
     logoutForm.style.display = 'none';
 }
+
+function getLatestState() {
+    if (currentGame) {
+        console.log("we have current game");
+        console.log(currentGame.id);
+        getCurrentGame(function (game) {
+            if (game.moves.length != currentGame.moves.length) {
+                console.log("number of moves changed");
+                currentGame = game;
+                console.log(game);
+                createCurrentGameVisuals(currentGame);
+            }
+        });
+    } else {
+        console.log("no game yet");
+    }
+
+}
+
+setInterval(getLatestState, 1000);

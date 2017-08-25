@@ -35,8 +35,27 @@ module.exports = function(port, middleware, callback) {
         res.sendStatus(201);
     });
 
+    // add a move
+    app.post("/api/game/:id", function(req, res) {
+        var stateChange = req.body.stateChange;
+        var game = getGame(req.params.id);
+        game.moves.push(stateChange);
+        var piece = getPiece(stateChange.piece, game.currentState);
+        if (piece) {
+            console.log("found piece");
+        }
+        piece.pos.x = stateChange.toPos.x;
+        piece.pos.y = stateChange.toPos.y;
+        piece.pos.z = stateChange.toPos.z;
+        res.sendStatus(201);
+    });
+
     // Read
     app.get("/api/player/:id/currentGame", function(req, res) {
+        res.json(getGameFromPlayer(req.params.id));
+    });
+
+    app.get("/api/game/:id", function(req, res) {
         res.json(getGame(req.params.id));
     });
 
@@ -75,7 +94,8 @@ module.exports = function(port, middleware, callback) {
                 player_one : player,
                 player_two : undefined,
                 currentPlayer : player,
-                pieces : [
+                moves: [],
+                currentState : [
                     {
                         type : "king",
                         pos : { x:2 , y:0, z:4 },
@@ -129,7 +149,13 @@ module.exports = function(port, middleware, callback) {
         }
     }
 
-    function getGame(playerId) {
+    function getGame(id) {
+        return games.filter(function(game) {
+            return game.id === id;
+        })[0];
+    }
+
+    function getGameFromPlayer(playerId) {
         return games.filter(function(game) {
             return (game.player_one && (game.player_one.id === playerId)) || 
             (game.player_two && (game.player_two.id === playerId));
@@ -139,6 +165,16 @@ module.exports = function(port, middleware, callback) {
     function getPlayer(id) {
         return players.filter(function(player) {
             return player.id === id;
+        })[0];
+    }
+
+    function equalPos(a,b) {
+        return a.x == b.x && a.y == b.y && a.z == b.z;
+    }
+
+    function getPiece(piece, currentState) {
+        return currentState.filter(function (otherPiece) {
+            return piece.id === otherPiece.id;
         })[0];
     }
 
