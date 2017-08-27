@@ -18,20 +18,35 @@ var mouseDownLock = false;
 var dirtyRender = true;
 var mouseDrag = false;
 var gameIsVictored = false;
+var GAP_OFFSET = 0;
 
 var lastSelected;
 var localPieces = [];
 var visibleMoves = [];
+var positionCubes = [];
 var move_material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
-var geometry = new THREE.BoxGeometry( 0.9, 0.8, 0.9);
+var geometryCube = cube( 1 );
+geometryCube.computeLineDistances();
+var lineMaterial = new THREE.LineBasicMaterial( { color: 0xffaa00, opacity: 1, linewidth: 0.1 } );
+var otherLineMaterial = new THREE.LineBasicMaterial( { color: 0x00aaff, opacity: 1, linewidth: 0.1 } );
+var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
+var boxGeometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
+var cylinderGeometry = new THREE.CylinderGeometry(0.9,0.9,4,32);
+var coneGeometry = new THREE.ConeGeometry(0.4,0.9,32);
+var knotGeometry = new THREE.TorusKnotGeometry( 0.2, 0.15, 0.9, 16 );
+var sphereGeometry = new THREE.SphereGeometry(0.4,32,32);
+var torusGeometry = new THREE.TorusGeometry( 0.9, 3, 16, 100 );
 var move_geometry = new THREE.BoxGeometry( 0.8, 0.9, 0.8);
-var small_geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
+var small_geometry = new THREE.BoxGeometry( 1, 1, 1);
 var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
 var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
 var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
 var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
+small_material.transparent = true;
+small_material.opacity = 0.2;
+
 var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
-const OFFSET = -2;
+var OFFSET = -2;
 var x_size = 5;
 var y_size = 5;
 var z_size = 5;
@@ -71,6 +86,39 @@ function moveSingleScalar(i, pos) {
     });
     return moves;
 }
+
+function cube( size ) {
+    var h = size * 0.5;
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(
+        new THREE.Vector3( -h, -h, -h ),
+        new THREE.Vector3( -h, h, -h ),
+        new THREE.Vector3( -h, h, -h ),
+        new THREE.Vector3( h, h, -h ),
+        new THREE.Vector3( h, h, -h ),
+        new THREE.Vector3( h, -h, -h ),
+        new THREE.Vector3( h, -h, -h ),
+        new THREE.Vector3( -h, -h, -h ),
+        new THREE.Vector3( -h, -h, h ),
+        new THREE.Vector3( -h, h, h ),
+        new THREE.Vector3( -h, h, h ),
+        new THREE.Vector3( h, h, h ),
+        new THREE.Vector3( h, h, h ),
+        new THREE.Vector3( h, -h, h ),
+        new THREE.Vector3( h, -h, h ),
+        new THREE.Vector3( -h, -h, h ),
+        new THREE.Vector3( -h, -h, -h ),
+        new THREE.Vector3( -h, -h, h ),
+        new THREE.Vector3( -h, h, -h ),
+        new THREE.Vector3( -h, h, h ),
+        new THREE.Vector3( h, h, -h ),
+        new THREE.Vector3( h, h, h ),
+        new THREE.Vector3( h, -h, -h ),
+        new THREE.Vector3( h, -h, h )
+     );
+    return geometry;
+}
+
 
 function isLegalMove(actualMove, owner) {
     var isLegal = true;
@@ -387,7 +435,10 @@ function reloadTodoList() {
 
 function addMoveCube (position) {
     var cube = new THREE.Mesh( move_geometry, move_material );
-    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+    cube.position.set(
+        position.x + OFFSET + (position.x * GAP_OFFSET),
+        position.y + OFFSET + (position.y * GAP_OFFSET),
+        position.z + OFFSET + (position.z * GAP_OFFSET));
     scene.add( cube );
     return cube;
 }
@@ -437,25 +488,38 @@ function pickMouse() {
         return;
     }
     dirtyRender = true;
+    small_material.needsUpdate = true;
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
     var tempSelected = lastSelected;
+    var intersectedObject;
 
     if ( lastSelected ) {
         lastSelected.selected = false;
         lastSelected = null;
     }
     
-    if ( intersects.length > 0 ) {
-        intersectedObject = intersects[ 0 ].object;
-        movementSelected = getSelectedMovementFromObject(intersectedObject);
-        if (movementSelected) {
-            movePiece(tempSelected, movementSelected);
+    if ( intersects && intersects.length > 0 ) {
+        var index = 0;
+        var found = false;
+        while (intersects.length > index && !found) {
+            if (!intersects[index].object.isPositionCube) {
+                intersectedObject = intersects[index].object;
+                found = true;
+            }
+            index++;
         }
-        lastSelected = getLocalPieceFromObject(intersectedObject);
-        if (lastSelected) {
-            lastSelected.selected = true;
+        // intersectedObject = intersects[ 0 ].object;
+        if (intersectedObject) {
+            movementSelected = getSelectedMovementFromObject(intersectedObject);
+            if (movementSelected) {
+                movePiece(tempSelected, movementSelected);
+            }
+            lastSelected = getLocalPieceFromObject(intersectedObject);
+            if (lastSelected) {
+                lastSelected.selected = true;
+            }
         }
     }
     clearVisibleMoves();
@@ -520,6 +584,29 @@ function onDocumentMouseDown( event ) {
     
 }
 
+function onDocumentKeyup(event) {
+    console.log(event);
+    if (event.key === "[") {
+        GAP_OFFSET = GAP_OFFSET - 0.1;
+        OFFSET = OFFSET + 0.2;
+        dirtyRender = true;
+    }
+    if (event.key === "]") {
+        GAP_OFFSET = GAP_OFFSET + 0.1;
+        OFFSET = OFFSET - 0.2;
+        dirtyRender = true;
+    }
+    if (GAP_OFFSET < 0) {
+        GAP_OFFSET = 0;
+    }
+    if (GAP_OFFSET > 5) {
+        GAP_OFFSET = 5;
+    }
+    if (dirtyRender) {
+        drawEverything(currentGame);
+    }
+}
+
 function victoryTheGame(game) {
     console.log(game);
     var message = game[game.winner].name === playerName ? "You Win!" : "You Lose";
@@ -527,16 +614,41 @@ function victoryTheGame(game) {
     gameIsVictored = true;
 }
 
-function addcube (position, material) {
-    var cube = new THREE.Mesh( geometry, material );
-    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+function addcube (position, material, type) {
+    var thisGeometry = geometry;
+    if (type) {
+        if (type === "king") {
+            thisGeometry = boxGeometry;
+        }
+        if (type === "knight") {
+            thisGeometry = knotGeometry;
+        }
+        if (type === "pawn") {
+            thisGeometry = coneGeometry;
+        }
+        if (type === "castle") {
+            thisGeometry = sphereGeometry;
+        }
+    }
+    var cube = new THREE.Mesh( thisGeometry, material );
+
+    cube.position.set(
+        position.x + OFFSET + (position.x * GAP_OFFSET),
+        position.y + OFFSET + (position.y * GAP_OFFSET),
+        position.z + OFFSET + (position.z * GAP_OFFSET));
     scene.add( cube );
     return cube;
 }
 
 function addpositioncube (position) {
+    // var lineCube = new THREE.LineSegments( geometryCube, lineMaterial);
     var cube = new THREE.Mesh( small_geometry, small_material );
-    cube.position.set(position.x + OFFSET,position.y + OFFSET,position.z + OFFSET);
+    cube.position.set(
+        position.x + OFFSET + (position.x * GAP_OFFSET),
+        position.y + OFFSET + (position.y * GAP_OFFSET),
+        position.z + OFFSET + (position.z * GAP_OFFSET));
+    cube.isPositionCube = true;
+    positionCubes.push(cube);
     scene.add( cube );
 }
 
@@ -560,7 +672,7 @@ function createCurrentGameVisuals(currentGame) {
         var y = currentPiece.pos.y;
         var z = currentPiece.pos.z;
         var material = currentPiece.owner == "player_one" ? red_material : blue_material;
-        var obj = addcube({x:x,y:y,z:z}, material);
+        var obj = addcube({x:x,y:y,z:z}, material, currentPiece.type);
         localPieces.push({
             obj : obj,
             piece : currentPiece,
@@ -568,6 +680,33 @@ function createCurrentGameVisuals(currentGame) {
         });
     }
     dirtyRender = true;
+}
+
+function drawEverything(currentGame) {
+    createCurrentGameVisuals(currentGame);
+
+ 
+    for (var index = 0; index < positionCubes.length; index++) {
+        scene.remove(positionCubes[index]);
+    }
+    positionCubes = [];
+    var unit = 1;
+    var flip = true;
+    var otherFlip = true;
+    for (var x_index = 0; x_index < x_size; x_index++) {
+        for (var y_index = 0; y_index < y_size; y_index++) {
+            for (var z_index = 0; z_index < z_size; z_index++) {
+                if (flip) {
+                    addpositioncube({x:x_index,y:y_index,z:z_index}, otherFlip);
+                    otherFlip = !otherFlip;
+                   flip = false;
+                } else {
+                   flip = true;
+                }
+            }       
+        }
+    }
+
 }
 
 function startDrawing(currentGame) {
@@ -582,20 +721,11 @@ function startDrawing(currentGame) {
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'mouseup', onDocumentMouseUp, false );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener( 'keyup', onDocumentKeyup, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
     
-
-    createCurrentGameVisuals(currentGame);
-
-    var unit = 1;
-    for (var x_index = 0; x_index < x_size; x_index++) {
-        for (var y_index = 0; y_index < y_size; y_index++) {
-            for (var z_index = 0; z_index < z_size; z_index++) {
-                addpositioncube({x:x_index,y:y_index,z:z_index})
-            }       
-        }
-    }
+    drawEverything(currentGame)
 
     camera.position.set(0, 0, 10);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
