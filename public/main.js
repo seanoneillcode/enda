@@ -37,10 +37,16 @@ var coneGeometry = new THREE.ConeGeometry(0.5,1,32);
 var knotGeometry = new THREE.TorusKnotGeometry( 0.25, 0.15, 0.9, 16 );
 var sphereGeometry = new THREE.SphereGeometry(0.5,32,32);
 var torusGeometry = new THREE.TorusGeometry( 1, 3, 16, 100 );
-var move_geometry = new THREE.BoxGeometry( 1, 1, 1);
+var move_geometry = new THREE.BoxGeometry( 0.92, 0.92, 0.92);
 var small_geometry = new THREE.BoxGeometry( 1, 1, 1);
-var red_material = new THREE.MeshLambertMaterial( { color: 0x00A9FF } );
-var blue_material = new THREE.MeshLambertMaterial( { color: 0xFF8E00 } );
+
+var orange_color = 0xFF8E00;
+var blue_color = 0x00A9FF;
+var red_color = 0xFF2D30;
+var white_color = 0xFFFFFF;
+// var red_material = new THREE.MeshLambertMaterial( { color: orange_color } );
+// var blue_material = new THREE.MeshLambertMaterial( { color: blue_color } );
+// var attack_material = new THREE.MeshLambertMaterial( { color: red_color } );
 // attack material 0xFF2D30
 
 var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
@@ -129,6 +135,21 @@ function cube( size ) {
 }
 
 
+function isEnemyPiece(pos, owner) {
+    var isEnemyPiece = false;
+    var enemy_owner = "player_one";
+    if (owner === "player_one") {
+        enemy_owner = "player_two"
+    }
+    var ownerPieces = getPiecesForOwner(enemy_owner);
+    ownerPieces.forEach(function(ownerPiece) {
+        if (isEqualPos(ownerPiece.piece.pos, pos)) {
+            isEnemyPiece = true;
+        }
+    });
+    return isEnemyPiece;
+}
+
 function isLegalMove(actualMove, owner) {
     var isLegal = true;
     if (actualMove.x >= x_size) {
@@ -170,7 +191,10 @@ function moveRangeScalar(input, pos, owner) {
         if (!isLegalMove(p, owner)) {
             blocked = true;
         } else {
-            moves.push(p);
+            moves.push(p);                
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     var blocked = false
@@ -184,6 +208,9 @@ function moveRangeScalar(input, pos, owner) {
             blocked = true;
         } else {
             moves.push(p);
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     var blocked = false
@@ -197,6 +224,9 @@ function moveRangeScalar(input, pos, owner) {
             blocked = true;
         } else {
             moves.push(p);
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     blocked = false;
@@ -210,6 +240,9 @@ function moveRangeScalar(input, pos, owner) {
             blocked = true;
         } else {
             moves.push(p);
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     blocked = false;
@@ -223,6 +256,9 @@ function moveRangeScalar(input, pos, owner) {
             blocked = true;
         } else {
             moves.push(p);
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     blocked = false;
@@ -236,6 +272,9 @@ function moveRangeScalar(input, pos, owner) {
             blocked = true;
         } else {
             moves.push(p);
+            if (isEnemyPiece(p, owner)) {
+                blocked = true;
+            }
         }
     }
     return moves;
@@ -485,9 +524,25 @@ function generateMoves(piece) {
     return moves;
 }
 
+function getPieceAtMove(move) {
+    return localPieces.filter(function(piece) {
+            return isEqualPos(move, piece.piece.pos);
+        })[0];
+}
+
 function clearVisibleMoves() {
     visibleMoves.forEach(function(move) {
-        scene.remove(move.obj);
+        if (move.isActualPiece) {
+            var owner = move.piece.piece.owner;
+            if (owner === "player_one") {
+                move.piece.obj.material.color.setHex(orange_color);
+            } else {
+                move.piece.obj.material.color.setHex(blue_color);
+            }
+            move.piece.obj.material.needsUpdate = true;
+        } else {
+            scene.remove(move.obj);            
+        }
     });
     visibleMoves = [];
 }
@@ -496,8 +551,6 @@ function pickMouse() {
     if (currentGame.metaState !== "playing") {
         return;
     }
-    dirtyRender = true;
-    small_material.needsUpdate = true;
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
@@ -536,12 +589,34 @@ function pickMouse() {
         var moves = generateMoves(lastSelected.piece);
         moves.forEach(function(move) {
             // todo if move ends up on emeny - dont add a cube, add something special to indicate
-            var cube = addMoveCube(move);
-            visibleMoves.push({
-                obj: cube,
-                pos: move
-            });
+            var pieceAtMove = getPieceAtMove(move);
+            if (pieceAtMove) {
+                pieceAtMove.obj.material.color.setHex(red_color);
+                pieceAtMove.obj.material.needsUpdate = true;
+                console.log("found piece", pieceAtMove);
+                visibleMoves.push({
+                    piece: pieceAtMove,
+                    isActualPiece: true
+                });
+            } else {
+                var cube = addMoveCube(move);
+                visibleMoves.push({
+                    obj: cube,
+                    pos: move
+                });
+            }
+            
         });
+    }
+    if (lastSelected) {
+        lastSelected.obj.material.color.setHex(white_color);
+    } 
+    if (tempSelected) {
+        if (tempSelected.piece.owner == "player_one") {
+            tempSelected.obj.material.color.setHex(orange_color);
+        } else {
+            tempSelected.obj.material.color.setHex(blue_color);
+        }
     }
 }
 
@@ -685,8 +760,10 @@ function createCurrentGameVisuals(currentGame) {
         var x = currentPiece.pos.x;
         var y = currentPiece.pos.y;
         var z = currentPiece.pos.z;
-        var material = currentPiece.owner == "player_one" ? red_material : blue_material;
-        var obj = addcube({x:x,y:y,z:z}, material, currentPiece.type);
+        var mat_color = currentPiece.owner == "player_one" ? orange_color : blue_color;
+        var mat = new THREE.MeshLambertMaterial( { color: mat_color } );
+        mat.name = "" + i;
+        var obj = addcube({x:x,y:y,z:z}, mat, currentPiece.type);
         localPieces.push({
             obj : obj,
             piece : currentPiece,
@@ -788,20 +865,7 @@ function startDrawing(currentGame) {
     var animate = function () {
         requestAnimationFrame( animate );
         controls.update();
-        if (dirtyRender) {
-            localPieces.forEach (function(localPiece) {
-                if (localPiece.selected) {
-                    localPiece.obj.material = selected_material;
-                } else {
-                    if (localPiece.piece.owner == "player_one") {
-                        localPiece.obj.material = red_material;
-                    } else {
-                        localPiece.obj.material = blue_material;
-                    }
-                }
-            });
-            dirtyRender = false;
-        }
+        
         renderer.render(scene, camera);
     };
 
