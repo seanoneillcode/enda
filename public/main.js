@@ -534,12 +534,7 @@ function clearVisibleMoves() {
     visibleMoves.forEach(function(move) {
         if (move.isActualPiece) {
             var owner = move.piece.piece.owner;
-            if (owner === "player_one") {
-                move.piece.obj.material.color.setHex(orange_color);
-            } else {
-                move.piece.obj.material.color.setHex(blue_color);
-            }
-            move.piece.obj.material.needsUpdate = true;
+            move.piece.inDanger = false;
         } else {
             scene.remove(move.obj);            
         }
@@ -580,7 +575,16 @@ function pickMouse() {
             }
             lastSelected = getLocalPieceFromObject(intersectedObject);
             if (lastSelected) {
-                lastSelected.selected = true;
+                if (lastSelected.inDanger && tempSelected) {
+                    if (lastSelected.piece.owner !== tempSelected.piece.owner) {
+                        movePiece(tempSelected, lastSelected.piece);
+                        lastSelected = null;
+                    } else {
+                        lastSelected.selected = true;
+                    }
+                } else {
+                    lastSelected.selected = true;                    
+                }
             }
         }
     }
@@ -588,11 +592,9 @@ function pickMouse() {
     if (lastSelected) {
         var moves = generateMoves(lastSelected.piece);
         moves.forEach(function(move) {
-            // todo if move ends up on emeny - dont add a cube, add something special to indicate
             var pieceAtMove = getPieceAtMove(move);
             if (pieceAtMove) {
-                pieceAtMove.obj.material.color.setHex(red_color);
-                pieceAtMove.obj.material.needsUpdate = true;
+                pieceAtMove.inDanger = true;
                 console.log("found piece", pieceAtMove);
                 visibleMoves.push({
                     piece: pieceAtMove,
@@ -608,16 +610,21 @@ function pickMouse() {
             
         });
     }
-    if (lastSelected) {
-        lastSelected.obj.material.color.setHex(white_color);
-    } 
-    if (tempSelected) {
-        if (tempSelected.piece.owner == "player_one") {
-            tempSelected.obj.material.color.setHex(orange_color);
+    localPieces.forEach(function(piece){
+        if (piece.selected) {
+            piece.obj.material.color.setHex(white_color);
         } else {
-            tempSelected.obj.material.color.setHex(blue_color);
+            if (piece.inDanger) {
+                piece.obj.material.color.setHex(red_color);
+            } else {
+                if (piece.piece.owner == "player_one") {
+                    piece.obj.material.color.setHex(orange_color);
+                } else {
+                    piece.obj.material.color.setHex(blue_color);
+                }
+            }
         }
-    }
+    });
 }
 
 function movePiece(object, to) {
@@ -694,7 +701,7 @@ function onDocumentKeyup(event) {
 function victoryTheGame(game) {
     console.log(game);
     var message = game[game.winner].name === playerName ? "You Win!" : "You Lose";
-    gameMessage.textContent = "" + message + "\nwell done " + game[game.winner].name;
+    gameMessage.textContent = "" + message;
     gameIsVictored = true;
 }
 
