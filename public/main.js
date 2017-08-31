@@ -32,6 +32,7 @@ var otherLineMaterial = new THREE.LineBasicMaterial( { color: 0x00aaff, opacity:
 var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
 var boxGeometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
 var cylinderGeometry = new THREE.CylinderGeometry(0.9,0.9,4,32);
+var planeGeometry = new THREE.PlaneGeometry( 1, 1, 4, 4 );
 var coneGeometry = new THREE.ConeGeometry(0.4,0.9,32);
 var knotGeometry = new THREE.TorusKnotGeometry( 0.2, 0.15, 0.9, 16 );
 var sphereGeometry = new THREE.SphereGeometry(0.4,32,32);
@@ -43,13 +44,19 @@ var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
 var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
 var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
 small_material.transparent = true;
-small_material.opacity = 0.2;
+small_material.opacity = 0.9;
+var dark_square_material = new THREE.MeshLambertMaterial( { color: 0x222222 } );
+dark_square_material.transparent = true;
+dark_square_material.opacity = 0.1;
+var light_square_material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+light_square_material.transparent = true;
+light_square_material.opacity = 0.1;
 
 var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 var OFFSET = -2;
-var x_size = 5;
-var y_size = 5;
-var z_size = 5;
+var x_size = 4;
+var y_size = 4;
+var z_size = 4;
 
 
 function moveSingleScalar(i, pos) {
@@ -152,7 +159,7 @@ function isLegalMove(actualMove, owner) {
 function moveRangeScalar(input, pos, owner) {
     var moves = [];
     var blocked = false
-    for (var i = pos.x + 1; i <= 5 && !blocked; i++) {
+    for (var i = pos.x + 1; i <= 4 && !blocked; i++) {
         var p = {
             x:i,
             y:pos.y,
@@ -165,7 +172,7 @@ function moveRangeScalar(input, pos, owner) {
         }
     }
     var blocked = false
-    for (var i = pos.y + 1; i <= 5 && !blocked; i++) {
+    for (var i = pos.y + 1; i <= 4 && !blocked; i++) {
         var p = {
             x:pos.x,
             y:i,
@@ -178,7 +185,7 @@ function moveRangeScalar(input, pos, owner) {
         }
     }
     var blocked = false
-    for (var i = pos.z + 1; i <= 5 && !blocked; i++) {
+    for (var i = pos.z + 1; i <= 4 && !blocked; i++) {
         var p = {
             x:pos.x,
             y:pos.y,
@@ -599,8 +606,8 @@ function onDocumentKeyup(event) {
     if (GAP_OFFSET < 0) {
         GAP_OFFSET = 0;
     }
-    if (GAP_OFFSET > 5) {
-        GAP_OFFSET = 5;
+    if (GAP_OFFSET > 4) {
+        GAP_OFFSET = 4;
     }
     if (dirtyRender) {
         drawEverything(currentGame);
@@ -640,12 +647,13 @@ function addcube (position, material, type) {
     return cube;
 }
 
-function addpositioncube (position) {
-    // var lineCube = new THREE.LineSegments( geometryCube, lineMaterial);
-    var cube = new THREE.Mesh( small_geometry, small_material );
+function addpositioncube (position, flip) {
+    var cube = new THREE.Mesh( planeGeometry, flip ? light_square_material : dark_square_material);
+    cube.rotation.x = THREE.Math.degToRad( 270 );
+    // var cube = new THREE.Mesh( geometryCube, lineMaterial );
     cube.position.set(
         position.x + OFFSET + (position.x * GAP_OFFSET),
-        position.y + OFFSET + (position.y * GAP_OFFSET),
+        position.y + OFFSET + (position.y * GAP_OFFSET) - 0.5,
         position.z + OFFSET + (position.z * GAP_OFFSET));
     cube.isPositionCube = true;
     positionCubes.push(cube);
@@ -682,31 +690,47 @@ function createCurrentGameVisuals(currentGame) {
     dirtyRender = true;
 }
 
+var side_geometry = new THREE.PlaneGeometry( 4, 4, 4, 4);
+var texture = new THREE.TextureLoader().load('images/test.png');
+texture.magFilter = THREE.NearestFilter;
+var tex_material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture } );
+function drawSide(position, rotation) {
+    var mesh = new THREE.Mesh( side_geometry, tex_material);
+    mesh.rotation.x = THREE.Math.degToRad( rotation.x );
+    mesh.rotation.y = THREE.Math.degToRad( rotation.y );
+    mesh.rotation.z = THREE.Math.degToRad( rotation.z );
+    mesh.position.set(
+        position.x + OFFSET + (position.x),
+        position.y + OFFSET + (position.y),
+        position.z + OFFSET + (position.z));
+    mesh.isPositionCube = true;
+    positionCubes.push(mesh);
+    scene.add( mesh );
+}
+
 function drawEverything(currentGame) {
     createCurrentGameVisuals(currentGame);
 
- 
+    
     for (var index = 0; index < positionCubes.length; index++) {
         scene.remove(positionCubes[index]);
     }
     positionCubes = [];
     var unit = 1;
     var flip = true;
-    var otherFlip = true;
     for (var x_index = 0; x_index < x_size; x_index++) {
         for (var y_index = 0; y_index < y_size; y_index++) {
-            for (var z_index = 0; z_index < z_size; z_index++) {
-                if (flip) {
-                    addpositioncube({x:x_index,y:y_index,z:z_index}, otherFlip);
-                    otherFlip = !otherFlip;
-                   flip = false;
-                } else {
-                   flip = true;
-                }
-            }       
+            // addline(
+            //     {x:x_index + OFFSET,y:y_index + OFFSET,z:OFFSET},
+            //     {x:x_index + OFFSET,y:y_index + OFFSET,z:4 + OFFSET}, scene);
         }
     }
-
+    drawSide({x:0.75,y:0.75,z:-0.25}, {x:0,y:0,z:0});
+    drawSide({x:0.75,y:0.75,z:1.75}, {x:180,y:0,z:0});
+    drawSide({x:1.75,y:0.75,z:0.75}, {x:0,y:270,z:0});
+    drawSide({x:-0.25,y:0.75,z:0.75}, {x:0,y:90,z:0});
+    drawSide({x:0.75,y:1.75,z:0.75}, {x:90,y:0,z:0});
+    drawSide({x:0.75,y:-0.25,z:0.75}, {x:270,y:0,z:0});
 }
 
 function startDrawing(currentGame) {

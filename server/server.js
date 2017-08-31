@@ -105,49 +105,49 @@ module.exports = function(port, middleware, callback) {
                 currentState : [
                     {
                         type : "king",
-                        pos : { x:2 , y:0, z:4 },
+                        pos : { x:2 , y:0, z:3 },
                         owner : "player_one",
                         id: 0
                     },
                     {
                         type : "castle",
-                        pos : { x:1 , y:0, z:3 },
+                        pos : { x:1 , y:0, z:2 },
                         owner : "player_one",
                         id: 1
                     },
                     {
                         type : "pawn",
-                        pos : { x:2 , y:0, z:3 },
+                        pos : { x:2 , y:0, z:2 },
                         owner : "player_one",
                         id: 2
                     },
                     {
                         type : "knight",
-                        pos : { x:3 , y:0, z:3 },
+                        pos : { x:3 , y:0, z:2 },
                         owner : "player_one",
                         id: 3
                     },
                     {
                         type : "king",
-                        pos : { x:2 , y:4, z:0 },
+                        pos : { x:2 , y:3, z:0 },
                         owner : "player_two",
                         id: 4
                     },
                     {
                         type : "castle",
-                        pos : { x:3 , y:4, z:1 },
+                        pos : { x:3 , y:3, z:1 },
                         owner : "player_two",
                         id: 5
                     },
                     {
                         type : "pawn",
-                        pos : { x:2 , y:4, z:1 },
+                        pos : { x:2 , y:3, z:1 },
                         owner : "player_two",
                         id: 6
                     },
                     {
                         type : "knight",
-                        pos : { x:1 , y:4, z:1 },
+                        pos : { x:1 , y:3, z:1 },
                         owner : "player_two",
                         id: 7
                     }
