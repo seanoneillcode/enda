@@ -24,23 +24,25 @@ var lastSelected;
 var localPieces = [];
 var visibleMoves = [];
 var positionCubes = [];
-var move_material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
+
 var geometryCube = cube( 1 );
 geometryCube.computeLineDistances();
 var lineMaterial = new THREE.LineBasicMaterial( { color: 0xffaa00, opacity: 1, linewidth: 0.1 } );
 var otherLineMaterial = new THREE.LineBasicMaterial( { color: 0x00aaff, opacity: 1, linewidth: 0.1 } );
 var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
 var boxGeometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
-var cylinderGeometry = new THREE.CylinderGeometry(0.9,0.9,4,32);
+var cylinderGeometry = new THREE.CylinderGeometry(0.5,0.5,1,32);
 var planeGeometry = new THREE.PlaneGeometry( 1, 1, 4, 4 );
-var coneGeometry = new THREE.ConeGeometry(0.4,0.9,32);
-var knotGeometry = new THREE.TorusKnotGeometry( 0.2, 0.15, 0.9, 16 );
-var sphereGeometry = new THREE.SphereGeometry(0.4,32,32);
-var torusGeometry = new THREE.TorusGeometry( 0.9, 3, 16, 100 );
-var move_geometry = new THREE.BoxGeometry( 0.8, 0.9, 0.8);
+var coneGeometry = new THREE.ConeGeometry(0.5,1,32);
+var knotGeometry = new THREE.TorusKnotGeometry( 0.25, 0.15, 0.9, 16 );
+var sphereGeometry = new THREE.SphereGeometry(0.5,32,32);
+var torusGeometry = new THREE.TorusGeometry( 1, 3, 16, 100 );
+var move_geometry = new THREE.BoxGeometry( 1, 1, 1);
 var small_geometry = new THREE.BoxGeometry( 1, 1, 1);
-var red_material = new THREE.MeshLambertMaterial( { color: 0xff0033 } );
-var blue_material = new THREE.MeshLambertMaterial( { color: 0x3300ff } );
+var red_material = new THREE.MeshLambertMaterial( { color: 0x00A9FF } );
+var blue_material = new THREE.MeshLambertMaterial( { color: 0xFF8E00 } );
+// attack material 0xFF2D30
+
 var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
 var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
 small_material.transparent = true;
@@ -621,11 +623,15 @@ function victoryTheGame(game) {
     gameIsVictored = true;
 }
 
+var move_material = new THREE.MeshLambertMaterial( { color: 0xB2B005 } );
+// move_material.transparent = true;
+// move_material.opacity = 0.7;
+
 function addcube (position, material, type) {
     var thisGeometry = geometry;
     if (type) {
         if (type === "king") {
-            thisGeometry = boxGeometry;
+            thisGeometry = cylinderGeometry;
         }
         if (type === "knight") {
             thisGeometry = knotGeometry;
@@ -694,6 +700,7 @@ var side_geometry = new THREE.PlaneGeometry( 4, 4, 4, 4);
 var texture = new THREE.TextureLoader().load('images/test.png');
 texture.magFilter = THREE.NearestFilter;
 var tex_material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture } );
+
 function drawSide(position, rotation) {
     var mesh = new THREE.Mesh( side_geometry, tex_material);
     mesh.rotation.x = THREE.Math.degToRad( rotation.x );
@@ -731,12 +738,19 @@ function drawEverything(currentGame) {
     drawSide({x:-0.25,y:0.75,z:0.75}, {x:0,y:90,z:0});
     drawSide({x:0.75,y:1.75,z:0.75}, {x:90,y:0,z:0});
     drawSide({x:0.75,y:-0.25,z:0.75}, {x:270,y:0,z:0});
+
 }
 
 function startDrawing(currentGame) {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
-
+   // camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
+    var aspect = window.innerWidth / window.innerHeight;
+    var frustumSize = 8;
+    camera = new THREE.OrthographicCamera(
+        frustumSize * aspect / - 2,
+        frustumSize * aspect / 2,
+        frustumSize / 2,
+        frustumSize / - 2, 1, 30 );
     renderer = new THREE.WebGLRenderer();
     raycaster = new THREE.Raycaster();;
     
@@ -759,14 +773,17 @@ function startDrawing(currentGame) {
     controls.dampingFactor = 0.25;
     controls.enableZoom = false;
 
-    var light = new THREE.AmbientLight( 0x777777 ); // soft white light
+    var light = new THREE.AmbientLight( 0x444444 ); // soft white light
     scene.add( light );
-    var directionalLight = new THREE.DirectionalLight( 0x4488ff, 0.8 );
-    directionalLight.position.set(1,1,0);
+    var directionalLight = new THREE.DirectionalLight( 0xffffdd, 0.9 );
+    directionalLight.position.set(1,1,1);
     scene.add( directionalLight );
-    var directionalLight2 = new THREE.DirectionalLight( 0xff8844, 0.8 );
-    directionalLight2.position.set(0,1,1);
+    var directionalLight2 = new THREE.DirectionalLight( 0xddffff, 0.5 );
+    directionalLight2.position.set(-1,1,1);
     scene.add( directionalLight2 );
+    var directionalLight3 = new THREE.DirectionalLight( 0xddffdd, 0.3 );
+    directionalLight3.position.set(1,-1,1);
+    scene.add( directionalLight3 );
 
     var animate = function () {
         requestAnimationFrame( animate );
