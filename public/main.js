@@ -1,8 +1,7 @@
-var todoList = document.getElementById("todo-list");
 var form = document.getElementById("login-form");
 var joinForm = document.getElementById("join-form");
 var logoutForm = document.getElementById("logout-form");
-var todoTitle = document.getElementById("new-todo");
+var nameInput = document.getElementById("name-input");
 var currentPlayer = document.getElementById("current-player");
 var error = document.getElementById("error");
 var gameMessage = document.getElementById("game-message");
@@ -339,13 +338,13 @@ var legalMoves = {
 };
 
 form.onsubmit = function(event) {
-    var name = todoTitle.value;
+    var name = nameInput.value;
     addPlayer(name, function(response) {
         playerName = response.name;
         playerId = response.id;
         window.localStorage.setItem('playerName', playerName);
     });
-    todoTitle.value = "";
+    nameInput.value = "";
     playerName = name;
     currentPlayer.textContent = name;
     form.style.display = 'none';
@@ -426,19 +425,6 @@ function addPlayer(name, callback) {
     };
 }
 
-function getTodoList(callback) {
-    var createRequest = new XMLHttpRequest();
-    createRequest.open("GET", "/api/todo");
-    createRequest.onload = function() {
-        if (this.status === 200) {
-            callback(JSON.parse(this.responseText));
-        } else {
-            error.textContent = "Failed to get list. Server returned " + this.status + " - " + this.responseText;
-        }
-    };
-    createRequest.send();
-}
-
 function getCurrentGame(callback) {
     var createRequest = new XMLHttpRequest();
     createRequest.open("GET", "/api/game/" + currentGame.id);
@@ -467,21 +453,6 @@ function getCurrentGame(callback) {
         }
     };
     createRequest.send();
-}
-
-function reloadTodoList() {
-    while (todoList.firstChild) {
-        todoList.removeChild(todoList.firstChild);
-    }
-    todoListPlaceholder.style.display = "inline-block";
-    getTodoList(function(todos) {
-        todoListPlaceholder.style.display = "none";
-        todos.forEach(function(todo) {
-            var listItem = document.createElement("li");
-            listItem.textContent = todo.title;
-            todoList.appendChild(listItem);
-        });
-    });
 }
 
 function addMoveCube (position) {

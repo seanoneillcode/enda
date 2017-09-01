@@ -12,12 +12,9 @@ module.exports = function(port, middleware, callback) {
     app.use(bodyParser.json());
 
     var latestId = 0;
-    var todos = [];
     var players = [];
     var games = [];
     
-
-    // { name : "foo" }
     app.post("/api/player", function(req, res) {
         player = req.body;
         newPlayerId = latestId.toString();
@@ -25,17 +22,14 @@ module.exports = function(port, middleware, callback) {
         player.id = newPlayerId;
         players.push(player);
         res.json(player);
-        // res.sendStatus(201);
     });
 
-    // add the player 
     app.post("/api/game", function(req, res) {
         var playerId = req.body.playerId;
         addPlayerToGame(getPlayer(playerId));
         res.sendStatus(201);
     });
 
-    // add a move
     app.post("/api/game/:id", function(req, res) {
         var stateChange = req.body.stateChange;
         var game = getGame(req.params.id);
@@ -63,20 +57,6 @@ module.exports = function(port, middleware, callback) {
     app.get("/api/game/:id", function(req, res) {
         res.json(getGame(req.params.id));
     });
-
-    // Delete
-    // app.delete("/api/todo/:id", function(req, res) {
-    //     var id = req.params.id;
-    //     var todo = getTodo(id);
-    //     if (todo) {
-    //         todos = todos.filter(function(otherTodo) {
-    //             return otherTodo !== todo;
-    //         });
-    //         res.sendStatus(200);
-    //     } else {
-    //         res.sendStatus(404);
-    //     }
-    // });
 
     function addPlayerToGame (player) {
         var gamesThatNeedAPlayer = games.filter(function(game) {
