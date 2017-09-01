@@ -19,17 +19,12 @@ var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
 var mouseDrag = false;
-var GAP_OFFSET = 0;
 
 var lastSelected;
 var localPieces = [];
 var visibleMoves = [];
 var positionCubes = [];
 
-var geometryCube = cube( 1 );
-geometryCube.computeLineDistances();
-var lineMaterial = new THREE.LineBasicMaterial( { color: 0xffaa00, opacity: 1, linewidth: 0.1 } );
-var otherLineMaterial = new THREE.LineBasicMaterial( { color: 0x00aaff, opacity: 1, linewidth: 0.1 } );
 var geometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
 var boxGeometry = new THREE.BoxGeometry( 0.9, 0.9, 0.9);
 var cylinderGeometry = new THREE.CylinderGeometry(0.5,0.5,1,32);
@@ -39,36 +34,18 @@ var knotGeometry = new THREE.TorusKnotGeometry( 0.25, 0.15, 0.9, 16 );
 var sphereGeometry = new THREE.SphereGeometry(0.5,32,32);
 var torusGeometry = new THREE.TorusGeometry( 1, 3, 16, 100 );
 var move_geometry = new THREE.BoxGeometry( 0.92, 0.92, 0.92);
-var small_geometry = new THREE.BoxGeometry( 1, 1, 1);
 
 var orange_color = 0xFF8E00;
 var blue_color = 0x00A9FF;
 var red_color = 0xFF2D30;
 var white_color = 0xFFFFFF;
-// var red_material = new THREE.MeshLambertMaterial( { color: orange_color } );
-// var blue_material = new THREE.MeshLambertMaterial( { color: blue_color } );
-// var attack_material = new THREE.MeshLambertMaterial( { color: red_color } );
-// attack material 0xFF2D30
 
-var selected_material = new THREE.MeshLambertMaterial( { color: 0xffffff } );
-var small_material = new THREE.MeshLambertMaterial( { color: 0x888888 } );
-small_material.transparent = true;
-small_material.opacity = 0.9;
-var dark_square_material = new THREE.MeshLambertMaterial( { color: 0x222222 } );
-dark_square_material.transparent = true;
-dark_square_material.opacity = 0.1;
-var light_square_material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-light_square_material.transparent = true;
-light_square_material.opacity = 0.1;
-
-var material_line = new THREE.LineBasicMaterial({ color: 0x777777 });
 var OFFSET = -2;
 var x_size = 4;
 var y_size = 4;
 var z_size = 4;
 
 var clientState = "not-joined";
-
 
 function moveSingleScalar(i, pos) {
     var moves = [];
@@ -104,39 +81,6 @@ function moveSingleScalar(i, pos) {
     });
     return moves;
 }
-
-function cube( size ) {
-    var h = size * 0.5;
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(
-        new THREE.Vector3( -h, -h, -h ),
-        new THREE.Vector3( -h, h, -h ),
-        new THREE.Vector3( -h, h, -h ),
-        new THREE.Vector3( h, h, -h ),
-        new THREE.Vector3( h, h, -h ),
-        new THREE.Vector3( h, -h, -h ),
-        new THREE.Vector3( h, -h, -h ),
-        new THREE.Vector3( -h, -h, -h ),
-        new THREE.Vector3( -h, -h, h ),
-        new THREE.Vector3( -h, h, h ),
-        new THREE.Vector3( -h, h, h ),
-        new THREE.Vector3( h, h, h ),
-        new THREE.Vector3( h, h, h ),
-        new THREE.Vector3( h, -h, h ),
-        new THREE.Vector3( h, -h, h ),
-        new THREE.Vector3( -h, -h, h ),
-        new THREE.Vector3( -h, -h, -h ),
-        new THREE.Vector3( -h, -h, h ),
-        new THREE.Vector3( -h, h, -h ),
-        new THREE.Vector3( -h, h, h ),
-        new THREE.Vector3( h, h, -h ),
-        new THREE.Vector3( h, h, h ),
-        new THREE.Vector3( h, -h, -h ),
-        new THREE.Vector3( h, -h, h )
-     );
-    return geometry;
-}
-
 
 function isEnemyPiece(pos, owner) {
     var isEnemyPiece = false;
@@ -458,9 +402,9 @@ function getCurrentGame(callback) {
 function addMoveCube (position) {
     var cube = new THREE.Mesh( move_geometry, move_material );
     cube.position.set(
-        position.x + OFFSET + (position.x * GAP_OFFSET),
-        position.y + OFFSET + (position.y * GAP_OFFSET),
-        position.z + OFFSET + (position.z * GAP_OFFSET));
+        position.x + OFFSET,
+        position.y + OFFSET,
+        position.z + OFFSET);
     scene.add( cube );
     return cube;
 }
@@ -660,28 +604,6 @@ function onDocumentMouseDown( event ) {
     
 }
 
-function onDocumentKeyup(event) {
-    if (event.key === "[") {
-        GAP_OFFSET = GAP_OFFSET - 0.1;
-        OFFSET = OFFSET + 0.2;
-        dirtyRender = true;
-    }
-    if (event.key === "]") {
-        GAP_OFFSET = GAP_OFFSET + 0.1;
-        OFFSET = OFFSET - 0.2;
-        dirtyRender = true;
-    }
-    if (GAP_OFFSET < 0) {
-        GAP_OFFSET = 0;
-    }
-    if (GAP_OFFSET > 4) {
-        GAP_OFFSET = 4;
-    }
-    if (dirtyRender) {
-        drawEverything(currentGame);
-    }
-}
-
 function updatePlayerTurn() {
     if (clientState === "playing") {
         playerTurnBox.style.display = "inline-block";
@@ -743,32 +665,11 @@ function addcube (position, material, type) {
     var cube = new THREE.Mesh( thisGeometry, material );
 
     cube.position.set(
-        position.x + OFFSET + (position.x * GAP_OFFSET),
-        position.y + OFFSET + (position.y * GAP_OFFSET),
-        position.z + OFFSET + (position.z * GAP_OFFSET));
+        position.x + OFFSET,
+        position.y + OFFSET,
+        position.z + OFFSET);
     scene.add( cube );
     return cube;
-}
-
-function addpositioncube (position, flip) {
-    var cube = new THREE.Mesh( planeGeometry, flip ? light_square_material : dark_square_material);
-    cube.rotation.x = THREE.Math.degToRad( 270 );
-    // var cube = new THREE.Mesh( geometryCube, lineMaterial );
-    cube.position.set(
-        position.x + OFFSET + (position.x * GAP_OFFSET),
-        position.y + OFFSET + (position.y * GAP_OFFSET) - 0.5,
-        position.z + OFFSET + (position.z * GAP_OFFSET));
-    cube.isPositionCube = true;
-    positionCubes.push(cube);
-    scene.add( cube );
-}
-
-function addline (from, to, scene) {
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(from.x, from.y, from.z));
-    geometry.vertices.push(new THREE.Vector3(to.x, to.y, to.z));
-    var line = new THREE.Line(geometry, material_line);
-    scene.add( line );
 }
 
 function createCurrentGameVisuals(currentGame) {
@@ -806,9 +707,9 @@ function drawSide(position, rotation) {
     mesh.rotation.y = THREE.Math.degToRad( rotation.y );
     mesh.rotation.z = THREE.Math.degToRad( rotation.z );
     mesh.position.set(
-        position.x + OFFSET + (position.x),
-        position.y + OFFSET + (position.y),
-        position.z + OFFSET + (position.z));
+        position.x + OFFSET,
+        position.y + OFFSET,
+        position.z + OFFSET);
     mesh.isPositionCube = true;
     positionCubes.push(mesh);
     scene.add( mesh );
@@ -822,12 +723,13 @@ function drawEverything(currentGame) {
     }
     positionCubes = [];
     
-    drawSide({x:0.75,y:0.75,z:-0.25}, {x:0,y:0,z:0});
-    drawSide({x:0.75,y:0.75,z:1.75}, {x:180,y:0,z:0});
-    drawSide({x:1.75,y:0.75,z:0.75}, {x:0,y:270,z:0});
-    drawSide({x:-0.25,y:0.75,z:0.75}, {x:0,y:90,z:0});
-    drawSide({x:0.75,y:1.75,z:0.75}, {x:90,y:0,z:0});
-    drawSide({x:0.75,y:-0.25,z:0.75}, {x:270,y:0,z:0});
+    drawSide({x:1.5,y:1.5,z:-0.5}, {x:0,y:0,z:0});
+    drawSide({x:1.5,y:1.5,z:3.5}, {x:180,y:0,z:0});
+    drawSide({x:3.5,y:1.5,z:1.5}, {x:0,y:270,z:0});
+    drawSide({x:-0.5,y:1.5,z:1.5}, {x:0,y:90,z:0});
+    drawSide({x:1.5,y:3.5,z:1.5}, {x:90,y:0,z:0});
+    drawSide({x:1.5,y:-0.5,z:1.5}, {x:270,y:0,z:0});
+
 }
 
 function startDrawing(currentGame) {
@@ -848,7 +750,6 @@ function startDrawing(currentGame) {
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'mouseup', onDocumentMouseUp, false );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    document.addEventListener( 'keyup', onDocumentKeyup, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
     
