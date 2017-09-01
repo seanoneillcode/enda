@@ -277,11 +277,11 @@ function isPieceThisClientPiece(piece) {
 function pickMouse() {
     if (clientState !== "playing") {
         console.log("not playing yet");
-        return;
+       return;
     }
     if (currentGame[currentGame.currentPlayer].name !== playerName) {
         console.log("not your turn");
-        return;
+       return;
     }
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
@@ -314,6 +314,7 @@ function pickMouse() {
                     console.log("trying to move piece you dont own");
                 }
             }
+            console.log(intersectedObject);
             lastSelected = getLocalPieceFromObject(intersectedObject);
             if (lastSelected) {
                 if (lastSelected.inDanger && tempSelected) {
@@ -497,6 +498,7 @@ function createCurrentGameVisuals(currentGame) {
         var mat = new THREE.MeshLambertMaterial( { color: mat_color } );
         mat.name = "" + i;
         var obj = addcube({x:x,y:y,z:z}, mat, currentPiece.type);
+        obj.userData.piece = currentPiece;
         localPieces.push({
             obj : obj,
             piece : currentPiece,

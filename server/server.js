@@ -86,52 +86,100 @@ module.exports = function(port, middleware, callback) {
                 winner: undefined,
                 currentState : [
                     {
-                        type : "king",
-                        pos : { x:2 , y:0, z:3 },
+                        type : "castle",
+                        pos : { x:0 , y:0, z:3 },
                         owner : "player_one",
                         id: 0
                     },
                     {
                         type : "knight",
-                        pos : { x:1 , y:0, z:2 },
+                        pos : { x:1 , y:0, z:3 },
                         owner : "player_one",
                         id: 1
                     },
                     {
-                        type : "pawn",
-                        pos : { x:2 , y:0, z:2 },
+                        type : "king",
+                        pos : { x:2 , y:0, z:3 },
                         owner : "player_one",
                         id: 2
                     },
                     {
                         type : "castle",
-                        pos : { x:3 , y:0, z:2 },
+                        pos : { x:3 , y:0, z:3 },
                         owner : "player_one",
                         id: 3
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:0 , y:0, z:2 },
+                        owner : "player_one",
+                        id: 4
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:1 , y:0, z:2 },
+                        owner : "player_one",
+                        id: 5
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:2 , y:0, z:2 },
+                        owner : "player_one",
+                        id: 6
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:3 , y:0, z:2 },
+                        owner : "player_one",
+                        id: 7
+                    },
+                    {
+                        type : "castle",
+                        pos : { x:0 , y:3, z:0 },
+                        owner : "player_two",
+                        id: 8
                     },
                     {
                         type : "king",
                         pos : { x:1 , y:3, z:0 },
                         owner : "player_two",
-                        id: 4
+                        id: 9
                     },
                     {
                         type : "knight",
+                        pos : { x:2 , y:3, z:0 },
+                        owner : "player_two",
+                        id: 11
+                    },
+                    {
+                        type : "castle",
+                        pos : { x:3 , y:3, z:0 },
+                        owner : "player_two",
+                        id: 12
+                    },
+                    {
+                        type : "pawn",
+                        pos : { x:3 , y:3, z:1 },
+                        owner : "player_two",
+                        id: 13
+                    },
+                    {
+                        type : "pawn",
                         pos : { x:2 , y:3, z:1 },
                         owner : "player_two",
-                        id: 5
+                        id: 14
                     },
                     {
                         type : "pawn",
                         pos : { x:1 , y:3, z:1 },
                         owner : "player_two",
-                        id: 6
+                        id: 15
                     },
                     {
-                        type : "castle",
+                        type : "pawn",
                         pos : { x:0 , y:3, z:1 },
                         owner : "player_two",
-                        id: 7
+                        id: 16
                     }
                ]
             });

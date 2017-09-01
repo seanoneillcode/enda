@@ -10,7 +10,7 @@ var legalMoves = {
         { f: moveKnight, i: 1}
     ],
     "pawn": [
-        { f: moveSingleDiagonal, i: 1 }
+        { f: moveSingleScalar, i: 1 }
     ]
 };
 
