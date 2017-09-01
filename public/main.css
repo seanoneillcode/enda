@@ -44,3 +44,16 @@ h1 {
     font-size: 60px;
     text-align: center;
 }
+
+#player-color-box {
+    background-color: #111;
+    width: 90px;
+    display: none;
+}
+
+#player-color {
+    color: #fff;
+}
+
+/* blue #00f5ff */
+

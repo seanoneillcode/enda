@@ -89,6 +89,7 @@ module.exports = function(port, middleware, callback) {
             } else {
                 newGame.player_two = player;
             }
+            newGame.metaState = "playing";
         } else {
             console.log("no games found that has a space. making a new one");
             var newGameId = latestId.toString();
@@ -100,7 +101,7 @@ module.exports = function(port, middleware, callback) {
                 currentPlayer : player,
                 moves: [],
                 takenPieces: [],
-                metaState: "playing",
+                metaState: "waiting",
                 winner: undefined,
                 currentState : [
                     {
@@ -219,7 +220,6 @@ module.exports = function(port, middleware, callback) {
     // We manually manage the connections to ensure that they're closed when calling close().
     var connections = [];
     server.on("connection", function(connection) {
-        console.log("received a connection");
         connections.push(connection);
     });
 

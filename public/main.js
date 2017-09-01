@@ -6,7 +6,8 @@ var todoTitle = document.getElementById("new-todo");
 var currentPlayer = document.getElementById("current-player");
 var error = document.getElementById("error");
 var gameMessage = document.getElementById("game-message");
-
+var playerColorBox = document.getElementById("player-color-box");
+var playerColor = document.getElementById("player-color");
 
 var playerName;
 var playerId;
@@ -17,7 +18,6 @@ var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
 var mouseDrag = false;
-var gameIsVictored = false;
 var GAP_OFFSET = 0;
 
 var lastSelected;
@@ -65,6 +65,8 @@ var OFFSET = -2;
 var x_size = 4;
 var y_size = 4;
 var z_size = 4;
+
+var clientState = "not-joined";
 
 
 function moveSingleScalar(i, pos) {
@@ -391,7 +393,6 @@ function makeMoveServer(piece, toPos, callback) {
     var createRequest = new XMLHttpRequest();
     createRequest.open("POST", "/api/game/" + currentGame.id);
     createRequest.setRequestHeader("Content-type", "application/json");
-    console.log(piece, toPos);
     createRequest.send(JSON.stringify({
         stateChange: {
             piece: piece,
@@ -595,7 +596,6 @@ function pickMouse() {
             var pieceAtMove = getPieceAtMove(move);
             if (pieceAtMove) {
                 pieceAtMove.inDanger = true;
-                console.log("found piece", pieceAtMove);
                 visibleMoves.push({
                     piece: pieceAtMove,
                     isActualPiece: true
@@ -629,7 +629,6 @@ function pickMouse() {
 
 function movePiece(object, to) {
     makeMoveServer(object.piece, to.pos, function() {
-        console.log("client req to move a piece");
         getLatestState();
     });
 }
@@ -676,7 +675,6 @@ function onDocumentMouseDown( event ) {
 }
 
 function onDocumentKeyup(event) {
-    console.log(event);
     if (event.key === "[") {
         GAP_OFFSET = GAP_OFFSET - 0.1;
         OFFSET = OFFSET + 0.2;
@@ -699,15 +697,33 @@ function onDocumentKeyup(event) {
 }
 
 function victoryTheGame(game) {
-    console.log(game);
     var message = game[game.winner].name === playerName ? "You Win!" : "You Lose";
     gameMessage.textContent = "" + message;
-    gameIsVictored = true;
+    clientState = "victory";
+}
+
+function waitTheGame(game) {
+    var message = "waiting for another player to join";
+    gameMessage.textContent = "" + message;
+    clientState = "waiting";
+    playerColorBox.style.display= "none";
+}
+
+function playTheGame(game) {
+    var message = "";
+    gameMessage.textContent = "" + message;
+    clientState = "playing";
+    playerColorBox.style.display= "block";
+    if (currentGame.player_one.name === playerName) {
+        playerColor.textContent = "ORANGE";
+        playerColor.style.color = "#ffb400";
+    } else {
+        playerColor.textContent = "BLUE";
+        playerColor.style.color = "#00f5ff";
+    }
 }
 
 var move_material = new THREE.MeshLambertMaterial( { color: 0xB2B005 } );
-// move_material.transparent = true;
-// move_material.opacity = 0.7;
 
 function addcube (position, material, type) {
     var thisGeometry = geometry;
@@ -897,13 +913,18 @@ function getLatestState() {
     if (currentGame) {
         getCurrentGame(function (game) {
             if (game.moves.length != currentGame.moves.length) {
-                console.log("number of moves changed");
                 currentGame = game;
                 console.log(game);
                 createCurrentGameVisuals(currentGame);
             }
-            if (game.metaState === "victory" && !gameIsVictored) {
+            if (game.metaState === "victory" && clientState !== "victory") {
                 victoryTheGame(game);
+            }
+            if (game.metaState === "waiting" && clientState !== "waiting") {
+                waitTheGame(game);
+            }
+            if (game.metaState === "playing" && clientState !== "playing") {
+                playTheGame(game);
             }
         });
     }
