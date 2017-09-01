@@ -47,41 +47,6 @@ var z_size = 4;
 
 var clientState = "not-joined";
 
-function moveSingleScalar(i, pos) {
-    var moves = [];
-    moves.push({
-        x:pos.x + i,
-        y:pos.y,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y + i,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y,
-        z:pos.z + i
-    });
-    moves.push({
-        x: pos.x -i,
-        y:pos.y,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y - i,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y,
-        z:pos.z - i
-    });
-    return moves;
-}
-
 function isEnemyPiece(pos, owner) {
     var isEnemyPiece = false;
     var enemy_owner = "player_one";
@@ -97,7 +62,7 @@ function isEnemyPiece(pos, owner) {
     return isEnemyPiece;
 }
 
-function isLegalMove(actualMove, owner) {
+function isLegalMove(actualMove, ownerPieces) {
     var isLegal = true;
     if (actualMove.x >= x_size) {
         isLegal = false;
@@ -117,7 +82,6 @@ function isLegalMove(actualMove, owner) {
     if (actualMove.z < 0) {
         isLegal = false;
     }
-    var ownerPieces = getPiecesForOwner(owner);
     ownerPieces.forEach(function(ownerPiece) {
         if (isEqualPos(ownerPiece.piece.pos, actualMove)) {
             isLegal = false;
@@ -125,161 +89,6 @@ function isLegalMove(actualMove, owner) {
     });
     return isLegal;
 }
-
-function moveRangeScalar(input, pos, owner) {
-    var moves = [];
-    var blocked = false
-    for (var i = pos.x + 1; i <= 4 && !blocked; i++) {
-        var p = {
-            x:i,
-            y:pos.y,
-            z:pos.z
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);                
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    var blocked = false
-    for (var i = pos.y + 1; i <= 4 && !blocked; i++) {
-        var p = {
-            x:pos.x,
-            y:i,
-            z:pos.z
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    var blocked = false
-    for (var i = pos.z + 1; i <= 4 && !blocked; i++) {
-        var p = {
-            x:pos.x,
-            y:pos.y,
-            z:i
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.x - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:i,
-            y:pos.y,
-            z:pos.z
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.y - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:pos.x,
-            y:i,
-            z:pos.z
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.z - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:pos.x,
-            y:pos.y,
-            z:i
-        };
-        if (!isLegalMove(p, owner)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    return moves;
-}
-
-function getPosCopy(old) {
-    var newpos = {};
-    newpos.x = old.x;
-    newpos.y = old.y;
-    newpos.z = old.z;
-    return newpos;    
-}
-
-function moveKnight(input, pos, owner) {
-    var moves = [];
-    var dims = ['x', 'y', 'z'];
-    var dindex = 0;
-    // rotate through dims
-    for (dindex = 0; dindex < 3; dindex++) {
-        var current_dim = dims[dindex];
-        dims
-            .filter(function(dim) {
-                return dim !== current_dim;
-            })
-            .forEach(function(odim) {
-                var first = getPosCopy(pos);
-                first[current_dim] = pos[current_dim] + 2;
-                first[odim] = pos[odim] + 1;
-                moves.push(first);
-                first = getPosCopy(pos);
-                first[current_dim] = pos[current_dim] + 2;
-                first[odim] = pos[odim] - 1;
-                moves.push(first);
-                first = getPosCopy(pos);
-                first[current_dim] = pos[current_dim] - 2;
-                first[odim] = pos[odim] + 1;
-                moves.push(first);
-                first = getPosCopy(pos);
-                first[current_dim] = pos[current_dim] - 2;
-                first[odim] = pos[odim] - 1;
-                moves.push(first);
-            });
-    };
-    return moves;
-}
-
-var legalMoves = {
-    "king" : [],
-    "castle": [
-        { f: moveRangeScalar, i: 1}
-    ],
-    "knight": [
-        { f: moveKnight, i: 1}
-    ],
-    "pawn": [
-        { f: moveSingleScalar, i: 1 }
-    ]
-};
 
 form.onsubmit = function(event) {
     var name = nameInput.value;
@@ -413,7 +222,7 @@ function isEqualPos(a, b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
-function getPiecesForOwner(owner) {
+function getPiecesForOwner(owner, localPiece) {
     var owner_pieces = [];
     localPieces.forEach (function(localPiece) {
         if (localPiece.piece.owner == owner) {
@@ -428,13 +237,14 @@ function generateMoves(piece) {
     var currentPos = piece.pos;
     var moves = [];
     var abstractMoves = legalMoves[type];
+    var ownerPieces = getPiecesForOwner(piece.owner);
     abstractMoves.forEach(function(abstractMove) {
         var f = abstractMove.f;
         var input = abstractMove.i;
         var potentialMoves = f.apply(this, [input, currentPos, piece.owner]);
         potentialMoves.forEach(function(potentialMove) {
             var actualMove = potentialMove;
-            if (isLegalMove(actualMove, piece.owner)) {
+            if (isLegalMove(actualMove, ownerPieces)) {
                 moves.push(actualMove);
             }
         });
