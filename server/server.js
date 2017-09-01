@@ -1,6 +1,5 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-var _ = require("lodash");
 
 module.exports = function(port, middleware, callback) {
     var app = express();
