@@ -8,6 +8,8 @@ var error = document.getElementById("error");
 var gameMessage = document.getElementById("game-message");
 var playerColorBox = document.getElementById("player-color-box");
 var playerColor = document.getElementById("player-color");
+var playerTurnBox = document.getElementById("player-turn-box");
+var playerTurn = document.getElementById("player-turn");
 
 var playerName;
 var playerId;
@@ -347,7 +349,7 @@ form.onsubmit = function(event) {
     playerName = name;
     currentPlayer.textContent = name;
     form.style.display = 'none';
-    logoutForm.style.display = 'block';
+    logoutForm.style.display = 'inline-block';
     event.preventDefault();
 };
 
@@ -367,7 +369,7 @@ joinForm.onsubmit = function(event) {
 
 logoutForm.onsubmit = function(event) {
     window.localStorage.removeItem('playerName');
-    form.style.display = 'block';
+    form.style.display = 'inline-block';
     currentPlayer.textContent = '';
     event.preventDefault();
 };
@@ -471,7 +473,7 @@ function reloadTodoList() {
     while (todoList.firstChild) {
         todoList.removeChild(todoList.firstChild);
     }
-    todoListPlaceholder.style.display = "block";
+    todoListPlaceholder.style.display = "inline-block";
     getTodoList(function(todos) {
         todoListPlaceholder.style.display = "none";
         todos.forEach(function(todo) {
@@ -548,15 +550,12 @@ function isPieceThisClientPiece(piece) {
 }
 
 function pickMouse() {
-    console.log("player is currently " + playerName);
-    console.log("player turn is " + currentGame[currentGame.currentPlayer].name);
-    console.log("clientState is " + clientState);
     if (clientState !== "playing") {
-        console.log("not playing yet")
+        console.log("not playing yet");
         return;
     }
-    
     if (currentGame[currentGame.currentPlayer].name !== playerName) {
+        console.log("not your turn");
         return;
     }
     var localPiece;
@@ -584,9 +583,10 @@ function pickMouse() {
         if (intersectedObject) {
             movementSelected = getSelectedMovementFromObject(intersectedObject);
             if (movementSelected) {
-                console.log(tempSelected);
                 if (isPieceThisClientPiece(tempSelected.piece)) {
                     movePiece(tempSelected, movementSelected);
+                } else {
+                    console.log("trying to move piece you dont own");
                 }
             }
             lastSelected = getLocalPieceFromObject(intersectedObject);
@@ -711,6 +711,19 @@ function onDocumentKeyup(event) {
     }
 }
 
+function updatePlayerTurn() {
+    if (clientState === "playing") {
+        playerTurnBox.style.display = "inline-block";
+    } else {
+        playerTurnBox.style.display = "none";    
+    }
+    if (currentGame[currentGame.currentPlayer].name === playerName) {
+        playerTurn.textContent = "YOUR";
+    } else {
+        playerTurn.textContent = "THEIR";
+    }
+}
+
 function victoryTheGame(game) {
     var message = game[game.winner].name === playerName ? "You Win!" : "You Lose";
     gameMessage.textContent = "" + message;
@@ -728,7 +741,7 @@ function playTheGame(game) {
     var message = "";
     gameMessage.textContent = "" + message;
     clientState = "playing";
-    playerColorBox.style.display= "block";
+    playerColorBox.style.display= "inline-block";
     if (currentGame.player_one.name === playerName) {
         playerColor.textContent = "ORANGE";
         playerColor.style.color = "#ffb400";
@@ -919,7 +932,6 @@ function getLatestState() {
         getCurrentGame(function (game) {
             if (game.moves.length != currentGame.moves.length || game.currentPlayer != currentGame.currentPlayer) {
                 currentGame = game;
-                console.log(game);
                 createCurrentGameVisuals(currentGame);
             }
             if (game.metaState === "victory" && clientState !== "victory") {
@@ -931,6 +943,7 @@ function getLatestState() {
             if (game.metaState === "playing" && clientState !== "playing") {
                 playTheGame(game);
             }
+            updatePlayerTurn()
         });
     }
 

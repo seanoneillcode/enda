@@ -35,7 +35,7 @@ h1 {
 #menu {
     position: absolute;
     top: 0px;
-    width: 100%;
+    width: 25%;
     padding: 5px;
     z-index: 100;
 }
@@ -46,8 +46,6 @@ h1 {
 }
 
 #player-color-box {
-    background-color: #111;
-    width: 90px;
     display: none;
 }
 
@@ -55,5 +53,7 @@ h1 {
     color: #fff;
 }
 
-/* blue #00f5ff */
-
+#player-turn-box {
+    display: none;
+    font-size: 2em;
+}
