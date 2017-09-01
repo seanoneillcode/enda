@@ -51,6 +51,7 @@ module.exports = function(port, middleware, callback) {
         piece.pos.y = stateChange.toPos.y;
         piece.pos.z = stateChange.toPos.z;
         checkIfGameOver(game);
+        game.currentPlayer = game.currentPlayer == "player_one" ? "player_two" : "player_one";
         res.sendStatus(201);
     });
 
@@ -90,6 +91,7 @@ module.exports = function(port, middleware, callback) {
                 newGame.player_two = player;
             }
             newGame.metaState = "playing";
+            newGame.currentPlayer = "player_one";//Math.floor(Math.random() * 2) == 0 ? "player_one" : "player_two";
         } else {
             console.log("no games found that has a space. making a new one");
             var newGameId = latestId.toString();
@@ -98,7 +100,7 @@ module.exports = function(port, middleware, callback) {
                 id : newGameId,
                 player_one : player,
                 player_two : undefined,
-                currentPlayer : player,
+                currentPlayer : "player_one",
                 moves: [],
                 takenPieces: [],
                 metaState: "waiting",

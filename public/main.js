@@ -543,8 +543,20 @@ function clearVisibleMoves() {
     visibleMoves = [];
 }
 
+function isPieceThisClientPiece(piece) {
+    return currentGame.currentPlayer === piece.owner
+}
+
 function pickMouse() {
-    if (currentGame.metaState !== "playing") {
+    console.log("player is currently " + playerName);
+    console.log("player turn is " + currentGame[currentGame.currentPlayer].name);
+    console.log("clientState is " + clientState);
+    if (clientState !== "playing") {
+        console.log("not playing yet")
+        return;
+    }
+    
+    if (currentGame[currentGame.currentPlayer].name !== playerName) {
         return;
     }
     var localPiece;
@@ -557,7 +569,7 @@ function pickMouse() {
         lastSelected.selected = false;
         lastSelected = null;
     }
-    
+
     if ( intersects && intersects.length > 0 ) {
         var index = 0;
         var found = false;
@@ -572,7 +584,10 @@ function pickMouse() {
         if (intersectedObject) {
             movementSelected = getSelectedMovementFromObject(intersectedObject);
             if (movementSelected) {
-                movePiece(tempSelected, movementSelected);
+                console.log(tempSelected);
+                if (isPieceThisClientPiece(tempSelected.piece)) {
+                    movePiece(tempSelected, movementSelected);
+                }
             }
             lastSelected = getLocalPieceFromObject(intersectedObject);
             if (lastSelected) {
@@ -818,27 +833,17 @@ function drawSide(position, rotation) {
 function drawEverything(currentGame) {
     createCurrentGameVisuals(currentGame);
 
-    
     for (var index = 0; index < positionCubes.length; index++) {
         scene.remove(positionCubes[index]);
     }
     positionCubes = [];
-    var unit = 1;
-    var flip = true;
-    for (var x_index = 0; x_index < x_size; x_index++) {
-        for (var y_index = 0; y_index < y_size; y_index++) {
-            // addline(
-            //     {x:x_index + OFFSET,y:y_index + OFFSET,z:OFFSET},
-            //     {x:x_index + OFFSET,y:y_index + OFFSET,z:4 + OFFSET}, scene);
-        }
-    }
+    
     drawSide({x:0.75,y:0.75,z:-0.25}, {x:0,y:0,z:0});
     drawSide({x:0.75,y:0.75,z:1.75}, {x:180,y:0,z:0});
     drawSide({x:1.75,y:0.75,z:0.75}, {x:0,y:270,z:0});
     drawSide({x:-0.25,y:0.75,z:0.75}, {x:0,y:90,z:0});
     drawSide({x:0.75,y:1.75,z:0.75}, {x:90,y:0,z:0});
     drawSide({x:0.75,y:-0.25,z:0.75}, {x:270,y:0,z:0});
-
 }
 
 function startDrawing(currentGame) {
@@ -912,7 +917,7 @@ if (localPlayerName) {
 function getLatestState() {
     if (currentGame) {
         getCurrentGame(function (game) {
-            if (game.moves.length != currentGame.moves.length) {
+            if (game.moves.length != currentGame.moves.length || game.currentPlayer != currentGame.currentPlayer) {
                 currentGame = game;
                 console.log(game);
                 createCurrentGameVisuals(currentGame);
