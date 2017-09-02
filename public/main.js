@@ -9,6 +9,7 @@ var playerColorBox = document.getElementById("player-color-box");
 var playerColor = document.getElementById("player-color");
 var playerTurnBox = document.getElementById("player-turn-box");
 var playerTurn = document.getElementById("player-turn");
+var drawingHolder = document.getElementById("drawing-holder");
 
 var playerName;
 var playerId;
@@ -41,7 +42,6 @@ var blue_color = 0x00A9FF;
 var red_color = 0xFF2D30;
 var white_color = 0xFFFFFF;
 
-var OFFSET = -2;
 var x_size = 4;
 var y_size = 4;
 var z_size = 4;
@@ -212,9 +212,9 @@ function getCurrentGame(callback) {
 function addMoveCube (position) {
     var cube = new THREE.Mesh( move_geometry, move_material );
     cube.position.set(
-        position.x + OFFSET,
-        position.y + OFFSET,
-        position.z + OFFSET);
+        position.x,
+        position.y,
+        position.z);
     scene.add( cube );
     return cube;
 }
@@ -492,9 +492,9 @@ function addcube (position, material, type) {
     var cube = new THREE.Mesh( thisGeometry, material );
 
     cube.position.set(
-        position.x + OFFSET,
-        position.y + OFFSET,
-        position.z + OFFSET);
+        position.x,
+        position.y,
+        position.z);
     scene.add( cube );
     return cube;
 }
@@ -507,9 +507,9 @@ function createCurrentGameVisuals(currentGame) {
 
     for (var i = currentGame.currentState.length - 1; i >= 0; i--) {
         var currentPiece = currentGame.currentState[i];
-        var x = currentPiece.pos.x;
-        var y = currentPiece.pos.y;
-        var z = currentPiece.pos.z;
+        var x = currentPiece.pos.x + 0.5;
+        var y = currentPiece.pos.y + 0.5;
+        var z = currentPiece.pos.z + 0.5;
         var mat_color = currentPiece.owner == "player_one" ? orange_color : blue_color;
         var mat = new THREE.MeshLambertMaterial( { color: mat_color } );
         mat.name = "" + i;
@@ -535,9 +535,9 @@ function drawSide(position, rotation) {
     mesh.rotation.y = THREE.Math.degToRad( rotation.y );
     mesh.rotation.z = THREE.Math.degToRad( rotation.z );
     mesh.position.set(
-        position.x + OFFSET,
-        position.y + OFFSET,
-        position.z + OFFSET);
+        position.x,
+        position.y,
+        position.z);
     mesh.isPositionCube = true;
     positionCubes.push(mesh);
     scene.add( mesh );
@@ -551,12 +551,12 @@ function drawEverything(currentGame) {
     }
     positionCubes = [];
     
-    drawSide({x:1.5,y:1.5,z:-0.5}, {x:0,y:0,z:0});
-    drawSide({x:1.5,y:1.5,z:3.5}, {x:180,y:0,z:0});
-    drawSide({x:3.5,y:1.5,z:1.5}, {x:0,y:270,z:0});
-    drawSide({x:-0.5,y:1.5,z:1.5}, {x:0,y:90,z:0});
-    drawSide({x:1.5,y:3.5,z:1.5}, {x:90,y:0,z:0});
-    drawSide({x:1.5,y:-0.5,z:1.5}, {x:270,y:0,z:0});
+    drawSide({x:2,y:2,z:0}, {x:0,y:0,z:0});
+    drawSide({x:2,y:2,z:4}, {x:180,y:0,z:0});
+    drawSide({x:4,y:2,z:2}, {x:0,y:270,z:0});
+    drawSide({x:0,y:2,z:2}, {x:0,y:90,z:0});
+    drawSide({x:2,y:4,z:2}, {x:90,y:0,z:0});
+    drawSide({x:2,y:0,z:2}, {x:270,y:0,z:0});
 
 }
 
@@ -564,7 +564,7 @@ function startDrawing(currentGame) {
     scene = new THREE.Scene();
    // camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
     var aspect = window.innerWidth / window.innerHeight;
-    var frustumSize = 8;
+    var frustumSize = 10;
     camera = new THREE.OrthographicCamera(
         frustumSize * aspect / - 2,
         frustumSize * aspect / 2,
@@ -574,7 +574,7 @@ function startDrawing(currentGame) {
     raycaster = new THREE.Raycaster();;
     
     renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    drawingHolder.appendChild( renderer.domElement );
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'mouseup', onDocumentMouseUp, false );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -584,13 +584,14 @@ function startDrawing(currentGame) {
     
     drawEverything(currentGame)
 
-    camera.position.set(0, 0, 10);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.position.set(2, 2, 8);
 
     controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.target = new THREE.Vector3(2,2,2);
 
     var light = new THREE.AmbientLight( 0x444444 ); // soft white light
     scene.add( light );

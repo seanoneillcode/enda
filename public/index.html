@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>ENDA</title>
         <link href="main.css" rel="stylesheet" type="text/css">
         <script src="js/three.js"></script>
@@ -9,26 +10,47 @@
         <script src="js/PieceMovement.js"></script>
     </head>
     <body>
-        <div id="menu">
-            <p id="current-player"></p>
-            <form id="login-form">
-                <input id="name-input" placeholder="Enter Name" autofocus>
-                <input type="submit" value="Log in">
-            </form>
-            <form id="logout-form">
-                <input id="submit-logout" type="submit" value="Log out">
-            </form>
-            <form id="join-form">
-                <input id="submit-join" type="submit" value="Join Game">
-            </form>
-            <div id="player-color-box">
-                <p>You are the <span id="player-color">CURRENT</span> player</p>
+        <div class="container">
+            <div id="menu" class="container">
+                <div class="header-item">
+                    <div id="current-player"></div>                   
+                </div>
+                <div class="header-item">
+                    <form id="login-form">
+                        <input id="name-input" placeholder="Enter Name" autofocus>
+                        <input type="submit" value="Log in">
+                    </form>
+                </div>
+                <div class="header-item">
+                    <form id="logout-form">
+                        <input id="submit-logout" type="submit" value="Log out">
+                    </form>
+                </div>
+                <div class="header-item">
+                    <form id="join-form">
+                        <input id="submit-join" type="submit" value="Join Game">
+                    </form>
+                </div>
+                <div class="header-item">
+                    <div id="player-color-box">
+                        <div>You are the <span id="player-color">CURRENT</span> player</div>
+                    </div>
+                </div>
+                <div class="header-item">
+                    <div id="player-turn-box">
+                        <div>It is <span id="player-turn">CURRENT</span> turn</div>
+                    </div>
+                </div>
+                <div class="header-item">
+                    <div id="error"></div>
+                </div>
+                <div class="header-item">
+                    <div id="game-message"></div>
+                </div>
             </div>
-            <div id="player-turn-box">
-                <p>It is <span id="player-turn">CURRENT</span> turn</p>
+            <div id="drawing-holder">
+                            
             </div>
-            <div id="error"></div>
-            <div id="game-message"></div>
         </div>
         <script type="text/javascript" src="main.js"></script>
     </body>
