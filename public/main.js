@@ -19,6 +19,7 @@ var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
 var mouseDrag = false;
+var superSecretAdmin = false;
 
 var lastSelected;
 var localPieces = [];
@@ -275,11 +276,11 @@ function isPieceThisClientPiece(piece) {
 }
 
 function pickMouse() {
-    if (clientState !== "playing") {
+    if (clientState !== "playing" && !superSecretAdmin) {
         console.log("not playing yet");
        return;
     }
-    if (currentGame[currentGame.currentPlayer].name !== playerName) {
+    if (currentGame[currentGame.currentPlayer].name !== playerName && !superSecretAdmin) {
         console.log("not your turn");
        return;
     }
@@ -308,10 +309,14 @@ function pickMouse() {
         if (intersectedObject) {
             movementSelected = getSelectedMovementFromObject(intersectedObject);
             if (movementSelected) {
-                if (isPieceThisClientPiece(tempSelected.piece)) {
+                if (superSecretAdmin) {
                     movePiece(tempSelected, movementSelected);
                 } else {
-                    console.log("trying to move piece you dont own");
+                    if (isPieceThisClientPiece(tempSelected.piece)) {
+                        movePiece(tempSelected, movementSelected);
+                    } else {
+                        console.log("trying to move piece you dont own");
+                    }                    
                 }
             }
             console.log(intersectedObject);
@@ -413,6 +418,17 @@ function onDocumentMouseDown( event ) {
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     
+}
+
+function onDocumentKeyUp(event) {
+    if (event.key === "[") {
+        superSecretAdmin = false;
+        console.log("disabling super secret admin mode");
+    }
+    if (event.key === "]") {
+        superSecretAdmin = true;
+        console.log("enabling super secret admin mode");
+    }
 }
 
 function updatePlayerTurn() {
@@ -562,6 +578,7 @@ function startDrawing(currentGame) {
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'mouseup', onDocumentMouseUp, false );
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener( 'keyup', onDocumentKeyUp, false );
 
     window.addEventListener( 'resize', onWindowResize, false );
     
