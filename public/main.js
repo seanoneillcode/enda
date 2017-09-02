@@ -10,6 +10,7 @@ var playerColor = document.getElementById("player-color");
 var playerTurnBox = document.getElementById("player-turn-box");
 var playerTurn = document.getElementById("player-turn");
 var drawingHolder = document.getElementById("drawing-holder");
+var menuContianer = document.getElementById("menu");
 
 var playerName;
 var playerId;
@@ -212,9 +213,9 @@ function getCurrentGame(callback) {
 function addMoveCube (position) {
     var cube = new THREE.Mesh( move_geometry, move_material );
     cube.position.set(
-        position.x,
-        position.y,
-        position.z);
+        position.x + 0.5,
+        position.y + 0.5,
+        position.z + 0.5);
     scene.add( cube );
     return cube;
 }
@@ -415,9 +416,8 @@ function onDocumentMouseDown( event ) {
     mouseDrag = false;
     mouseDownLock = true;
     event.preventDefault();
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    
+    mouse.x = ( event.offsetX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( (event.offsetY ) / window.innerHeight ) * 2 + 1;
 }
 
 function onDocumentKeyUp(event) {
