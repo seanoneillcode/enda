@@ -320,7 +320,6 @@ function pickMouse() {
                     }                    
                 }
             }
-            console.log(intersectedObject);
             lastSelected = getLocalPieceFromObject(intersectedObject);
             if (lastSelected) {
                 if (lastSelected.inDanger && tempSelected) {
@@ -505,7 +504,6 @@ function createCurrentGameVisuals(currentGame) {
     });
     localPieces = [];
 
-    console.log(currentGame.currentState);
     for (var i = currentGame.currentState.length - 1; i >= 0; i--) {
         var currentPiece = currentGame.currentState[i];
         var x = currentPiece.pos.x + 0.5;
@@ -592,6 +590,7 @@ function startDrawing(currentGame) {
     controls.dampingFactor = 0.25;
     controls.enableZoom = false;
     controls.enablePan = false;
+    controls.rotateSpeed = 0.5;
     controls.target = new THREE.Vector3(2,2,2);
 
     var light = new THREE.AmbientLight( 0x444444 ); // soft white light

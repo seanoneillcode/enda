@@ -1,6 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var chess_rules = require("./chess-rules");
+var _ = require("lodash");
 
 module.exports = function(port, middleware, callback) {
     var app = express();
@@ -85,7 +86,7 @@ module.exports = function(port, middleware, callback) {
                 takenPieces: [],
                 metaState: "waiting",
                 winner: undefined,
-                currentState : chess_rules.data
+                currentState : _.cloneDeep(chess_rules.data)
             });
         }
     }
