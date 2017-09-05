@@ -505,6 +505,7 @@ function createCurrentGameVisuals(currentGame) {
     });
     localPieces = [];
 
+    console.log(currentGame.currentState);
     for (var i = currentGame.currentState.length - 1; i >= 0; i--) {
         var currentPiece = currentGame.currentState[i];
         var x = currentPiece.pos.x + 0.5;
