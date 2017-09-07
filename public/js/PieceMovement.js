@@ -11,7 +11,16 @@ var legalMoves = {
     ],
     "pawn": [
         { f: moveSingleScalar, i: 1 }
-    ]
+    ],
+    "bishop": [
+        { f: moveSingleDiagonal, i: 1}
+    ],
+    "queen": [
+        { f: moveSingleScalar, i: 1 }
+    ],
+    "unicorn": [
+        { f: moveSingleScalar, i: 1 }
+    ], 
 };
 
 function getPosCopy(old) {

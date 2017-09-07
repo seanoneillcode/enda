@@ -20,6 +20,7 @@ var mouse = new THREE.Vector2(), INTERSECTED;
 var camera, renderer, scene, raycaster;
 var mouseDownLock = false;
 var dirtyRender = true;
+var firstDownEvent = false;
 var mouseDrag = false;
 var superSecretAdmin = false;
 
@@ -35,7 +36,7 @@ var planeGeometry = new THREE.PlaneGeometry( 1, 1, 4, 4 );
 var coneGeometry = new THREE.ConeGeometry(0.5,1,32);
 var knotGeometry = new THREE.TorusKnotGeometry( 0.25, 0.15, 0.9, 16 );
 var sphereGeometry = new THREE.SphereGeometry(0.5,32,32);
-var torusGeometry = new THREE.TorusGeometry( 1, 3, 16, 100 );
+var torusGeometry = new THREE.TorusGeometry( 0.4, 0.1, 16, 10 );
 var move_geometry = new THREE.BoxGeometry( 0.92, 0.92, 0.92);
 
 var orange_color = 0xFF8E00;
@@ -43,9 +44,9 @@ var blue_color = 0x00A9FF;
 var red_color = 0xFF2D30;
 var white_color = 0xFFFFFF;
 
-var x_size = 5;
-var y_size = 5;
-var z_size = 5;
+var x_size = 4;
+var y_size = 4;
+var z_size = 4;
 
 var clientState = "not-joined";
 
@@ -277,6 +278,7 @@ function isPieceThisClientPiece(piece) {
 }
 
 function pickMouse() {
+    console.log("got click here");
     if (clientState !== "playing" && !superSecretAdmin) {
         console.log("not playing yet");
        return;
@@ -285,6 +287,7 @@ function pickMouse() {
         console.log("not your turn");
        return;
     }
+    console.log("got click");
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );
@@ -404,16 +407,20 @@ function onDocumentMouseUp( event ) {
     event.preventDefault();
 }
 function onDocumentMouseMove( event ) {
+    if (firstDownEvent) {
+        firstDownEvent = false;
+        mouseDrag = false;
+        return;
+    }
     if (mouseDownLock) {
         mouseDrag = true;
+    } else {
+        mouseDrag = false;
     }
 }
 function onDocumentMouseDown( event ) {
-    if (mouseDownLock) {
-        return;
-    }
-    mouseDrag = false;
     mouseDownLock = true;
+    firstDownEvent = true;
     event.preventDefault();
     mouse.x = ( event.offsetX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( (event.offsetY ) / window.innerHeight ) * 2 + 1;
@@ -486,6 +493,9 @@ function addcube (position, material, type) {
         }
         if (type === "castle") {
             thisGeometry = sphereGeometry;
+        }
+        if (type === "queen") {
+            thisGeometry = torusGeometry;
         }
     }
     var cube = new THREE.Mesh( thisGeometry, material );
@@ -571,6 +581,9 @@ function drawEverything(currentGame) {
     drawSide({x:half_size,y:full_size,z:half_size}, {x:90,y:0,z:0}, full_size);
     drawSide({x:half_size,y:0,z:half_size}, {x:270,y:0,z:0}, full_size);
 
+    x_size = currentGame.board.x;
+    y_size = currentGame.board.y;
+    z_size = currentGame.board.z;
 }
 
 function startDrawing(currentGame) {
@@ -595,9 +608,12 @@ function startDrawing(currentGame) {
 
     window.addEventListener( 'resize', onWindowResize, false );
     
-    drawEverything(currentGame)
+    drawEverything(currentGame);
 
-    camera.position.set(2, 2, 8);
+    var full_size = currentGame.board.x;
+    var half_size = full_size * 0.5;
+
+    camera.position.set(half_size, half_size, 8);
 
     controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.enableDamping = true;
@@ -605,7 +621,7 @@ function startDrawing(currentGame) {
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.rotateSpeed = 0.5;
-    controls.target = new THREE.Vector3(2,2,2);
+    controls.target = new THREE.Vector3(half_size,half_size,half_size);
 
     var light = new THREE.AmbientLight( 0x444444 ); // soft white light
     scene.add( light );
