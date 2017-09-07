@@ -16,7 +16,7 @@ module.exports = function(port, middleware, callback) {
     var latestId = 0;
     var players = [];
     var games = [];
-    var current_rules = test_rules;
+    var current_rules = raumschach;
     
     app.post("/api/player", function(req, res) {
         player = req.body;

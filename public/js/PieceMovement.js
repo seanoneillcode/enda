@@ -13,7 +13,7 @@ var legalMoves = {
         { f: moveSingleScalar, i: 1 }
     ],
     "bishop": [
-        { f: moveSingleDiagonal, i: 1}
+        { f: moveRangeDiagonal, i: 5}
     ],
     "queen": [
         { f: moveSingleScalar, i: 1 }
@@ -68,7 +68,7 @@ function moveRangeScalar(input, pos, owner) {
     var moves = [];
     var blocked = false
     var ownerPieces = getPiecesForOwner(owner);
-    for (var i = pos.x + 1; i <= 4 && !blocked; i++) {
+    for (var i = pos.x + 1; i <= 5 && !blocked; i++) {
         var p = {
             x:i,
             y:pos.y,
@@ -84,7 +84,7 @@ function moveRangeScalar(input, pos, owner) {
         }
     }
     var blocked = false
-    for (var i = pos.y + 1; i <= 4 && !blocked; i++) {
+    for (var i = pos.y + 1; i <= 5 && !blocked; i++) {
         var p = {
             x:pos.x,
             y:i,
@@ -100,7 +100,7 @@ function moveRangeScalar(input, pos, owner) {
         }
     }
     var blocked = false
-    for (var i = pos.z + 1; i <= 4 && !blocked; i++) {
+    for (var i = pos.z + 1; i <= 5 && !blocked; i++) {
         var p = {
             x:pos.x,
             y:pos.y,
@@ -166,69 +166,90 @@ function moveRangeScalar(input, pos, owner) {
     return moves;
 }
 
-function moveSingleDiagonal(input, pos, owner) {
+function moveRangeDiagonal(input, pos, owner) {
     var moves = [];
+    var i = 0;
+    var move;
+    var ownerPieces = getPiecesForOwner(owner);
+    template_moves = [];
+    template_moves.push({
+        x:1,
+        y:1,
+        z:0
+    });
+    template_moves.push({
+        x:1,
+        y:-1,
+        z:0
+    });
+    template_moves.push({
+        x:-1,
+        y:-1,
+        z:0
+    });
+    template_moves.push({
+        x:-1,
+        y:1,
+        z:0
+    });
+    template_moves.push({
+        x:1,
+        y:0,
+        z:1
+    });
+    template_moves.push({
+        x:1,
+        y:0,
+        z:-1
+    });
+    template_moves.push({
+        x:-1,
+        y:0,
+        z:-1
+    });
+    template_moves.push({
+        x:-1,
+        y:0,
+        z:1
+    });
+    template_moves.push({
+        x:0,
+        y:1,
+        z:1
+    });
+    template_moves.push({
+        x:0,
+        y:1,
+        z:-1
+    });
+    template_moves.push({
+        x:0,
+        y:-1,
+        z:-1
+    });
+    template_moves.push({
+        x:0,
+        y:-1,
+        z:1
+    });
 
-    moves.push({
-        x:pos.x + input,
-        y:pos.y + input,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x + input,
-        y:pos.y - input,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x - input,
-        y:pos.y - input,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x - input,
-        y:pos.y + input,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x + input,
-        y:pos.y,
-        z:pos.z + input
-    });
-    moves.push({
-        x:pos.x + input,
-        y:pos.y,
-        z:pos.z - input
-    });
-    moves.push({
-        x:pos.x - input,
-        y:pos.y,
-        z:pos.z - input
-    });
-    moves.push({
-        x:pos.x - input,
-        y:pos.y,
-        z:pos.z + input
-    });
-
-    moves.push({
-        x:pos.x,
-        y:pos.y + input,
-        z:pos.z + input
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y + input,
-        z:pos.z - input
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y - input,
-        z:pos.z - input
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y - input,
-        z:pos.z + input
+    template_moves.forEach(function(template_move) {
+        blocked = false;
+        for (i = 1; i < input && !blocked; i++) {
+            move = {
+                x:pos.x + (template_move.x * i),
+                y:pos.y + (template_move.y * i),
+                z:pos.z + (template_move.z * i)
+            };
+            if (!isLegalMove(move, ownerPieces)) {
+                blocked = true;
+            } else {
+                moves.push(move);
+                if (isEnemyPiece(move, owner)) {
+                    blocked = true;
+                }
+            }
+        }   
     });
     return moves;    
 }

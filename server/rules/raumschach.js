@@ -68,7 +68,7 @@ module.exports = {
         },
         {
             type : "bishop",
-            pos : { x:0 , y:1, z:4 },
+            pos : { x:2 , y:2, z:2 },
             owner : "player_one",
             id: 10
         },
