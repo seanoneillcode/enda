@@ -1,6 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-var chess_rules = require("./chess-rules");
+var test_rules = require("./rules/test");
+var raumschach = require("./rules/raumschach");
 var _ = require("lodash");
 
 module.exports = function(port, middleware, callback) {
@@ -15,6 +16,7 @@ module.exports = function(port, middleware, callback) {
     var latestId = 0;
     var players = [];
     var games = [];
+    var current_rules = test_rules;
     
     app.post("/api/player", function(req, res) {
         player = req.body;
@@ -86,7 +88,8 @@ module.exports = function(port, middleware, callback) {
                 takenPieces: [],
                 metaState: "waiting",
                 winner: undefined,
-                currentState : _.cloneDeep(chess_rules.data)
+                currentState : _.cloneDeep(current_rules.data),
+                board: _.cloneDeep(current_rules.board)
             });
         }
     }

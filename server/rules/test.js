@@ -1,5 +1,10 @@
 
 module.exports = {
+    board: {
+        x:4,
+        y:4,
+        z:4
+    },
 	data : [
         {
             type : "castle",

@@ -43,9 +43,9 @@ var blue_color = 0x00A9FF;
 var red_color = 0xFF2D30;
 var white_color = 0xFFFFFF;
 
-var x_size = 4;
-var y_size = 4;
-var z_size = 4;
+var x_size = 5;
+var y_size = 5;
+var z_size = 5;
 
 var clientState = "not-joined";
 
@@ -523,13 +523,24 @@ function createCurrentGameVisuals(currentGame) {
     dirtyRender = true;
 }
 
-var side_geometry = new THREE.PlaneGeometry( 4, 4, 4, 4);
-var texture = new THREE.TextureLoader().load('images/test.png');
-texture.magFilter = THREE.NearestFilter;
-var tex_material = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture } );
+var texture = [ {}, {}, {}, {}, 
+    new THREE.TextureLoader().load('images/test-4.png'),
+    new THREE.TextureLoader().load('images/test-5.png')
+    ]
 
-function drawSide(position, rotation) {
-    var mesh = new THREE.Mesh( side_geometry, tex_material);
+texture.forEach(function(texture) {
+    if (texture) {
+        texture.magFilter = THREE.NearestFilter;
+    }
+});
+var tex_material = [ {}, {}, {}, {},
+    new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture[4] } ),
+    new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture[5] } )
+]
+
+function drawSide(position, rotation, size) {
+    var side_geometry = new THREE.PlaneGeometry( size, size, size, size);
+    var mesh = new THREE.Mesh( side_geometry, tex_material[size]);
     mesh.rotation.x = THREE.Math.degToRad( rotation.x );
     mesh.rotation.y = THREE.Math.degToRad( rotation.y );
     mesh.rotation.z = THREE.Math.degToRad( rotation.z );
@@ -550,12 +561,15 @@ function drawEverything(currentGame) {
     }
     positionCubes = [];
     
-    drawSide({x:2,y:2,z:0}, {x:0,y:0,z:0});
-    drawSide({x:2,y:2,z:4}, {x:180,y:0,z:0});
-    drawSide({x:4,y:2,z:2}, {x:0,y:270,z:0});
-    drawSide({x:0,y:2,z:2}, {x:0,y:90,z:0});
-    drawSide({x:2,y:4,z:2}, {x:90,y:0,z:0});
-    drawSide({x:2,y:0,z:2}, {x:270,y:0,z:0});
+    var full_size = currentGame.board.x;
+    var half_size = full_size * 0.5;
+
+    drawSide({x:half_size,y:half_size,z:0}, {x:0,y:0,z:0}, full_size);
+    drawSide({x:half_size,y:half_size,z:full_size}, {x:180,y:0,z:0}, full_size);
+    drawSide({x:full_size,y:half_size,z:half_size}, {x:0,y:270,z:0}, full_size);
+    drawSide({x:0,y:half_size,z:half_size}, {x:0,y:90,z:0}, full_size);
+    drawSide({x:half_size,y:full_size,z:half_size}, {x:90,y:0,z:0}, full_size);
+    drawSide({x:half_size,y:0,z:half_size}, {x:270,y:0,z:0}, full_size);
 
 }
 
