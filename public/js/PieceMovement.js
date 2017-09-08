@@ -1,25 +1,25 @@
 
 var legalMoves = {
     "king" : [
-        { f: moveSingleScalar, i: 1 }
+        { f: moveKing, i: 1 }
     ],
     "castle": [
-        { f: moveRangeScalar, i: 1}
+        { f: moveSides, i: 5}
     ],
     "knight": [
         { f: moveKnight, i: 1}
     ],
     "pawn": [
-        { f: moveSingleScalar, i: 1 }
+        { f: moveSides, i: 1 }
     ],
     "bishop": [
-        { f: moveRangeDiagonal, i: 5}
+        { f: moveEdges, i: 5}
     ],
     "queen": [
-        { f: moveSingleScalar, i: 1 }
+        { f: moveQueen, i: 5 }
     ],
     "unicorn": [
-        { f: moveSingleScalar, i: 1 }
+        { f: moveCorners, i: 5 }
     ], 
 };
 
@@ -29,6 +29,93 @@ function getPosCopy(old) {
     newpos.y = old.y;
     newpos.z = old.z;
     return newpos;    
+}
+
+function moveKing(input, pos, owner) {
+    var moves = [];
+    moveSides(input, pos, owner).forEach(function(move) {moves.push(move);});
+    moveEdges(input, pos, owner).forEach(function(move) { moves.push(move);});
+    moveCorners(input, pos, owner).forEach(function(move){moves.push(move);});
+    return moves;
+}
+
+function moveQueen(input, pos, owner) {
+    var moves = [];
+    moveSides(input, pos, owner).forEach(function(move) {moves.push(move);});
+    moveEdges(input, pos, owner).forEach(function(move) { moves.push(move);});
+    return moves;
+}
+
+function generatePositionsFromTemplates(input, pos, owner, templateMoves) {
+    var moves = [];
+    var ownerPieces = getPiecesForOwner(owner);
+    templateMoves.forEach(function(template_move) {
+        blocked = false;
+        for (var i = 1; i < (input + 1) && !blocked; i++) {
+            var move = {
+                x:pos.x + (template_move.x * i),
+                y:pos.y + (template_move.y * i),
+                z:pos.z + (template_move.z * i)
+            };
+            if (!isLegalMove(move, ownerPieces)) {
+                blocked = true;
+            } else {
+                moves.push(move);
+                if (isEnemyPiece(move, owner)) {
+                    blocked = true;
+                }
+            }
+        }   
+    });
+    return moves;
+}
+
+function moveCorners(input, pos, owner) {
+    var moves = [];
+
+    var templateMoves = [];
+    templateMoves.push({
+        x:1,
+        y:1,
+        z:1
+    });
+    templateMoves.push({
+        x:1,
+        y:1,
+        z:-1
+    });
+    templateMoves.push({
+        x:-1,
+        y:1,
+        z:-1
+    });
+    templateMoves.push({
+        x:-1,
+        y:1,
+        z:1
+    });
+    templateMoves.push({
+        x:1,
+        y:-1,
+        z:1
+    });
+    templateMoves.push({
+        x:1,
+        y:-1,
+        z:-1
+    });
+    templateMoves.push({
+        x:-1,
+        y:-1,
+        z:-1
+    });
+    templateMoves.push({
+        x:-1,
+        y:-1,
+        z:1
+    });
+
+    return generatePositionsFromTemplates(input, pos, owner, templateMoves);
 }
 
 function moveKnight(input, pos, owner) {
@@ -64,112 +151,42 @@ function moveKnight(input, pos, owner) {
     return moves;
 }
 
-function moveRangeScalar(input, pos, owner) {
-    var moves = [];
-    var blocked = false
-    var ownerPieces = getPiecesForOwner(owner);
-    for (var i = pos.x + 1; i <= 5 && !blocked; i++) {
-        var p = {
-            x:i,
-            y:pos.y,
-            z:pos.z
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);                
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    var blocked = false
-    for (var i = pos.y + 1; i <= 5 && !blocked; i++) {
-        var p = {
-            x:pos.x,
-            y:i,
-            z:pos.z
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    var blocked = false
-    for (var i = pos.z + 1; i <= 5 && !blocked; i++) {
-        var p = {
-            x:pos.x,
-            y:pos.y,
-            z:i
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.x - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:i,
-            y:pos.y,
-            z:pos.z
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.y - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:pos.x,
-            y:i,
-            z:pos.z
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    blocked = false;
-    for (var i = pos.z - 1; i >= 0 && !blocked; i--) {
-        var p = {
-            x:pos.x,
-            y:pos.y,
-            z:i
-        };
-        if (!isLegalMove(p, ownerPieces)) {
-            blocked = true;
-        } else {
-            moves.push(p);
-            if (isEnemyPiece(p, owner)) {
-                blocked = true;
-            }
-        }
-    }
-    return moves;
+function moveSides(input, pos, owner) {
+    var templateMoves = [];
+    templateMoves.push({
+        x:1,
+        y:0,
+        z:0
+    });
+    templateMoves.push({
+        x:-1,
+        y:0,
+        z:0
+    });
+    templateMoves.push({
+        x:0,
+        y:1,
+        z:0
+    });
+    templateMoves.push({
+        x:0,
+        y:-1,
+        z:0
+    });
+    templateMoves.push({
+        x:0,
+        y:0,
+        z:1
+    });
+    templateMoves.push({
+        x:0,
+        y:0,
+        z:-1
+    });
+    return generatePositionsFromTemplates(input, pos, owner, templateMoves);
 }
 
-function moveRangeDiagonal(input, pos, owner) {
-    var moves = [];
-    var i = 0;
-    var move;
+function moveEdges(input, pos, owner) {
     var ownerPieces = getPiecesForOwner(owner);
     template_moves = [];
     template_moves.push({
@@ -232,109 +249,6 @@ function moveRangeDiagonal(input, pos, owner) {
         y:-1,
         z:1
     });
-
-    template_moves.forEach(function(template_move) {
-        blocked = false;
-        for (i = 1; i < input && !blocked; i++) {
-            move = {
-                x:pos.x + (template_move.x * i),
-                y:pos.y + (template_move.y * i),
-                z:pos.z + (template_move.z * i)
-            };
-            if (!isLegalMove(move, ownerPieces)) {
-                blocked = true;
-            } else {
-                moves.push(move);
-                if (isEnemyPiece(move, owner)) {
-                    blocked = true;
-                }
-            }
-        }   
-    });
-    return moves;    
+    return generatePositionsFromTemplates(input, pos, owner, template_moves);    
 }
 
-function moveThreeDiagonal(input, pos, owner) {
-    var moves = [];
-
-    for (var i = 0; i < input; i++) {
-        moves.push({
-            x:pos.x + i,
-            y:pos.y + i,
-            z:pos.z + i
-        });
-        moves.push({
-            x:pos.x - i,
-            y:pos.y - i,
-            z:pos.z - i
-        });
-        moves.push({
-            x:pos.x + i,
-            y:pos.y - i,
-            z:pos.z + i
-        });
-        moves.push({
-            x:pos.x - i,
-            y:pos.y + i,
-            z:pos.z + i
-        });
-        moves.push({
-            x:pos.x + i,
-            y:pos.y + i,
-            z:pos.z - i
-        });
-        moves.push({
-            x:pos.x - i,
-            y:pos.y - i,
-            z:pos.z + i
-        });
-        moves.push({
-            x:pos.x + i,
-            y:pos.y - i,
-            z:pos.z - i
-        });
-        moves.push({
-            x:pos.x - i,
-            y:pos.y + i,
-            z:pos.z - i
-        });
-    }
-
-
-    return moves;
-}
-
-function moveSingleScalar(i, pos) {
-    var moves = [];
-    moves.push({
-        x:pos.x + i,
-        y:pos.y,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y + i,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y,
-        z:pos.z + i
-    });
-    moves.push({
-        x: pos.x -i,
-        y:pos.y,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y - i,
-        z:pos.z
-    });
-    moves.push({
-        x:pos.x,
-        y:pos.y,
-        z:pos.z - i
-    });
-    return moves;
-}

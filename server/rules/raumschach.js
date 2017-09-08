@@ -20,7 +20,7 @@ module.exports = {
         },
         {
             type : "king",
-            pos : { x:2 , y:0, z:4 },
+            pos : { x:2 , y:2, z:2 },
             owner : "player_one",
             id: 2
         },
@@ -68,7 +68,7 @@ module.exports = {
         },
         {
             type : "bishop",
-            pos : { x:2 , y:2, z:2 },
+            pos : { x:0 , y:1, z:4 },
             owner : "player_one",
             id: 10
         },
