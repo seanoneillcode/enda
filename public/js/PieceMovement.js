@@ -28,7 +28,7 @@ function getPosCopy(old) {
     newpos.x = old.x;
     newpos.y = old.y;
     newpos.z = old.z;
-    return newpos;    
+    return newpos;
 }
 
 function moveKing(input, pos, owner) {
