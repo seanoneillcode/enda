@@ -278,7 +278,6 @@ function isPieceThisClientPiece(piece) {
 }
 
 function pickMouse() {
-    console.log("got click here");
     if (clientState !== "playing" && !superSecretAdmin) {
         console.log("not playing yet");
        return;
@@ -287,7 +286,6 @@ function pickMouse() {
         console.log("not your turn");
        return;
     }
-    console.log("got click");
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
     var intersects = raycaster.intersectObjects( scene.children );

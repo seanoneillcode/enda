@@ -20,7 +20,7 @@ module.exports = {
         },
         {
             type : "king",
-            pos : { x:2 , y:2, z:2 },
+            pos : { x:2 , y:0, z:4 },
             owner : "player_one",
             id: 2
         },
@@ -129,53 +129,126 @@ module.exports = {
 
 
 
+
         {
             type : "castle",
-            pos : { x:0 , y:3, z:0 },
+            pos : { x:0 , y:4, z:0 },
             owner : "player_two",
             id: 20
         },
         {
-            type : "king",
-            pos : { x:1 , y:3, z:0 },
+            type : "knight",
+            pos : { x:1 , y:4, z:0 },
             owner : "player_two",
             id: 21
         },
         {
-            type : "knight",
-            pos : { x:2 , y:3, z:0 },
+            type : "king",
+            pos : { x:2 , y:4, z:0 },
             owner : "player_two",
             id: 22
         },
         {
-            type : "castle",
-            pos : { x:3 , y:3, z:0 },
+            type : "knight",
+            pos : { x:3 , y:4, z:0 },
             owner : "player_two",
             id: 23
         },
         {
-            type : "pawn",
-            pos : { x:3 , y:3, z:1 },
+            type : "castle",
+            pos : { x:4 , y:4, z:0 },
             owner : "player_two",
             id: 24
         },
         {
             type : "pawn",
-            pos : { x:2 , y:3, z:1 },
+            pos : { x:0 , y:4, z:1 },
             owner : "player_two",
             id: 25
         },
         {
             type : "pawn",
-            pos : { x:1 , y:3, z:1 },
+            pos : { x:1 , y:4, z:1 },
             owner : "player_two",
             id: 26
         },
         {
             type : "pawn",
-            pos : { x:0 , y:3, z:1 },
+            pos : { x:2 , y:4, z:1 },
             owner : "player_two",
             id: 27
+        },
+        {
+            type : "pawn",
+            pos : { x:3 , y:4, z:1 },
+            owner : "player_two",
+            id: 28
+        },
+        {
+            type : "pawn",
+            pos : { x:4 , y:4, z:1 },
+            owner : "player_two",
+            id: 29
+        },
+        {
+            type : "bishop",
+            pos : { x:0 , y:3, z:0 },
+            owner : "player_two",
+            id: 30
+        },
+        {
+            type : "unicorn",
+            pos : { x:1 , y:3, z:0 },
+            owner : "player_two",
+            id: 31
+        },
+        {
+            type : "queen",
+            pos : { x:2 , y:3, z:0 },
+            owner : "player_two",
+            id: 32
+        },
+        {
+            type : "unicorn",
+            pos : { x:3 , y:3, z:0 },
+            owner : "player_two",
+            id: 33
+        },
+        {
+            type : "bishop",
+            pos : { x:4 , y:3, z:0 },
+            owner : "player_two",
+            id: 34
+        },
+        {
+            type : "pawn",
+            pos : { x:0 , y:3, z:1 },
+            owner : "player_two",
+            id: 35
+        },
+        {
+            type : "pawn",
+            pos : { x:1 , y:3, z:1 },
+            owner : "player_two",
+            id: 36
+        },
+        {
+            type : "pawn",
+            pos : { x:2 , y:3, z:1 },
+            owner : "player_two",
+            id: 37
+        },
+        {
+            type : "pawn",
+            pos : { x:3 , y:3, z:1 },
+            owner : "player_two",
+            id: 38
+        },
+        {
+            type : "pawn",
+            pos : { x:4 , y:3, z:1 },
+            owner : "player_two",
+            id: 39
         }
     ]
 }
