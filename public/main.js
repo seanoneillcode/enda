@@ -315,6 +315,7 @@ function pickMouse() {
                     movePiece(tempSelected, movementSelected);
                 } else {
                     if (isPieceThisClientPiece(tempSelected.piece)) {
+                        console.log("moving piece ", tempSelected.piece);
                         movePiece(tempSelected, movementSelected);
                     } else {
                         console.log("trying to move piece you dont own");
@@ -324,7 +325,7 @@ function pickMouse() {
             lastSelected = getLocalPieceFromObject(intersectedObject);
             if (lastSelected) {
                 if (lastSelected.inDanger && tempSelected) {
-                    if (lastSelected.piece.owner !== tempSelected.piece.owner) {
+                    if (lastSelected.piece.owner !== tempSelected.piece.owner && isPieceThisClientPiece(tempSelected.piece)) {
                         movePiece(tempSelected, lastSelected.piece);
                         lastSelected = null;
                     } else {
