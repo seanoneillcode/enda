@@ -8,7 +8,7 @@ module.exports = {
     },
 	data : [
         {
-            type : "castle",
+            type : "bishop",
             pos : { x:0 , y:0, z:3, t:0 },
             owner : "player_one",
             id: 0
@@ -26,37 +26,37 @@ module.exports = {
             id: 2
         },
         {
-            type : "castle",
+            type : "bishop",
             pos : { x:3 , y:0, z:3, t:0 },
             owner : "player_one",
             id: 3
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:0 , y:0, z:2, t:0 },
             owner : "player_one",
             id: 4
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:1 , y:0, z:2, t:0 },
             owner : "player_one",
             id: 5
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:2 , y:0, z:2, t:0 },
             owner : "player_one",
             id: 6
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:3 , y:0, z:2, t:0 },
             owner : "player_one",
             id: 7
         },
         {
-            type : "castle",
+            type : "bishop",
             pos : { x:0 , y:3, z:0, t:3 },
             owner : "player_two",
             id: 8
@@ -74,31 +74,31 @@ module.exports = {
             id: 11
         },
         {
-            type : "castle",
+            type : "bishop",
             pos : { x:3 , y:3, z:0, t:3 },
             owner : "player_two",
             id: 12
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:3 , y:3, z:1, t:3 },
             owner : "player_two",
             id: 13
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:2 , y:3, z:1, t:3 },
             owner : "player_two",
             id: 14
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:1 , y:3, z:1, t:3 },
             owner : "player_two",
             id: 15
         },
         {
-            type : "pawn",
+            type : "castle",
             pos : { x:0 , y:3, z:1, t:3 },
             owner : "player_two",
             id: 16

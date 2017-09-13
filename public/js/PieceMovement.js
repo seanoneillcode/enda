@@ -199,6 +199,18 @@ function moveSides(input, pos, owner) {
         z:-1,
         t:0
     });
+    templateMoves.push({
+        x:0,
+        y:0,
+        z:0,
+        t:1
+    });
+    templateMoves.push({
+        x:0,
+        y:0,
+        z:0,
+        t:-1
+    });
     return generatePositionsFromTemplates(input, pos, owner, templateMoves);
 }
 
@@ -276,6 +288,79 @@ function moveEdges(input, pos, owner) {
         y:-1,
         z:1,
         t:0
+    });
+
+    template_moves.push({
+        x:1,
+        y:0,
+        z:0,
+        t:1
+    });
+    template_moves.push({
+        x:1,
+        y:0,
+        z:0,
+        t:-1
+    });
+    template_moves.push({
+        x:-1,
+        y:0,
+        z:0,
+        t:1
+    });
+    template_moves.push({
+        x:-1,
+        y:0,
+        z:0,
+        t:-1
+    });
+    template_moves.push({
+        x:0,
+        y:1,
+        z:0,
+        t:1
+    });
+    template_moves.push({
+        x:0,
+        y:1,
+        z:0,
+        t:-1
+    });
+    template_moves.push({
+        x:0,
+        y:-1,
+        z:0,
+        t:1
+    });
+    template_moves.push({
+        x:0,
+        y:-1,
+        z:0,
+        t:-1
+    });
+    template_moves.push({
+        x:0,
+        y:0,
+        z:1,
+        t:1
+    });
+    template_moves.push({
+        x:0,
+        y:0,
+        z:1,
+        t:-1
+    });
+    template_moves.push({
+        x:0,
+        y:0,
+        z:-1,
+        t:1
+    });
+    template_moves.push({
+        x:0,
+        y:0,
+        z:-1,
+        t:-1
     });
     return generatePositionsFromTemplates(input, pos, owner, template_moves);    
 }

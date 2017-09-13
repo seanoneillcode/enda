@@ -47,14 +47,14 @@ dim_cubes[0] = new THREE.Mesh(dim_geometry, dim_material);
 dim_cubes[1] = new THREE.Mesh(dim_geometry, dim_material);
 dim_cubes[2] = new THREE.Mesh(dim_geometry, dim_material);
 dim_cubes[3] = new THREE.Mesh(dim_geometry, dim_material);
-dim_cubes[0].position.x = -3;
-dim_cubes[0].position.y = -3;
-dim_cubes[1].position.x = 3;
-dim_cubes[1].position.y = 3;
-dim_cubes[2].position.x = -3;
-dim_cubes[2].position.y = 3;
-dim_cubes[3].position.x = 3;
-dim_cubes[3].position.y = -3;
+dim_cubes[0].position.x = -9;
+dim_cubes[0].position.y = 0;
+dim_cubes[1].position.x = -3;
+dim_cubes[1].position.y = 0;
+dim_cubes[2].position.x = 3;
+dim_cubes[2].position.y = 0;
+dim_cubes[3].position.x = 9;
+dim_cubes[3].position.y = 0;
 
 
 var orange_color = 0xFF8E00;
@@ -258,7 +258,7 @@ function addMoveCube (position) {
 }
 
 function isEqualPos(a, b) {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
+    return a.x == b.x && a.y == b.y && a.z == b.z && a.t == b.t;
 }
 
 function getPiecesForOwner(owner, localPiece) {
@@ -322,13 +322,12 @@ function pickMouse() {
         console.log("not playing yet");
        return;
     }
-    if (currentGame[currentGame.currentPlayer].name !== playerName && !superSecretAdmin) {
+    if (currentGame[currentGame.currentPlayer] && currentGame[currentGame.currentPlayer].name !== playerName && !superSecretAdmin) {
         console.log("not your turn");
        return;
     }
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
-    console.log(raycaster);
     var intersects = raycaster.intersectObjects( scene.children, true);
     var tempSelected = lastSelected;
     var intersectedObject;
@@ -339,7 +338,6 @@ function pickMouse() {
     }
 
     if ( intersects && intersects.length > 0 ) {
-        console.log("found intersecting object");
         var index = 0;
         var found = false;
         while (intersects.length > index && !found) {
@@ -518,7 +516,7 @@ function updatePlayerTurn() {
     } else {
         playerTurnBox.style.display = "none";    
     }
-    if (currentGame[currentGame.currentPlayer].name === playerName) {
+    if (currentGame[currentGame.currentPlayer] && currentGame[currentGame.currentPlayer].name === playerName) {
         playerTurn.textContent = "YOUR";
     } else {
         playerTurn.textContent = "THEIR";
