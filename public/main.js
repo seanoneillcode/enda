@@ -303,7 +303,11 @@ function clearVisibleMoves() {
             var owner = move.piece.piece.owner;
             move.piece.inDanger = false;
         } else {
-            scene.remove(move.obj);            
+            dim_cubes[0].remove(move.obj);
+            dim_cubes[1].remove(move.obj);
+            dim_cubes[2].remove(move.obj);
+            dim_cubes[3].remove(move.obj);
+            scene.remove(move.obj);      
         }
     });
     visibleMoves = [];
@@ -324,7 +328,8 @@ function pickMouse() {
     }
     var localPiece;
     raycaster.setFromCamera( mouse, camera );
-    var intersects = raycaster.intersectObjects( scene.children );
+    console.log(raycaster);
+    var intersects = raycaster.intersectObjects( scene.children, true);
     var tempSelected = lastSelected;
     var intersectedObject;
 
@@ -334,6 +339,7 @@ function pickMouse() {
     }
 
     if ( intersects && intersects.length > 0 ) {
+        console.log("found intersecting object");
         var index = 0;
         var found = false;
         while (intersects.length > index && !found) {
@@ -579,7 +585,8 @@ function addcube (position, material, type) {
 
 function createCurrentGameVisuals(currentGame) {
     localPieces.forEach(function (localPiece) {
-        scene.remove(localPiece.obj);
+        var index = localPiece.piece.pos.t;
+        dim_cubes[index].remove(localPiece.obj);
     });
     localPieces = [];
 
@@ -638,6 +645,10 @@ function drawEverything(currentGame) {
 
     for (var index = 0; index < positionCubes.length; index++) {
         scene.remove(positionCubes[index]);
+        dim_cubes[0].remove(positionCubes[index]);
+        dim_cubes[1].remove(positionCubes[index]);
+        dim_cubes[2].remove(positionCubes[index]);
+        dim_cubes[3].remove(positionCubes[index]);
     }
     positionCubes = [];
     
