@@ -2,6 +2,7 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var test_rules = require("./rules/test");
 var raumschach = require("./rules/raumschach");
+var four_rules = require("./rules/four");
 var _ = require("lodash");
 
 module.exports = function(port, middleware, callback) {
@@ -16,7 +17,7 @@ module.exports = function(port, middleware, callback) {
     var latestId = 0;
     var players = [];
     var games = [];
-    var current_rules = raumschach;
+    var current_rules = four_rules;
     
     app.post("/api/player", function(req, res) {
         player = req.body;
@@ -47,6 +48,7 @@ module.exports = function(port, middleware, callback) {
         piece.pos.x = stateChange.toPos.x;
         piece.pos.y = stateChange.toPos.y;
         piece.pos.z = stateChange.toPos.z;
+        piece.pos.t = stateChange.toPos.t;
         checkIfGameOver(game);
         game.currentPlayer = game.currentPlayer == "player_one" ? "player_two" : "player_one";
         res.sendStatus(201);
@@ -137,7 +139,7 @@ module.exports = function(port, middleware, callback) {
     }
 
     function equalPos(a,b) {
-        return a.x == b.x && a.y == b.y && a.z == b.z;
+        return a.x == b.x && a.y == b.y && a.z == b.z && a.t == b.t;
     }
 
     function getPiece(piece, currentState) {

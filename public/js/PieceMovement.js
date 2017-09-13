@@ -28,6 +28,7 @@ function getPosCopy(old) {
     newpos.x = old.x;
     newpos.y = old.y;
     newpos.z = old.z;
+    newpos.t = old.t;
     return newpos;
 }
 
@@ -55,7 +56,8 @@ function generatePositionsFromTemplates(input, pos, owner, templateMoves) {
             var move = {
                 x:pos.x + (template_move.x * i),
                 y:pos.y + (template_move.y * i),
-                z:pos.z + (template_move.z * i)
+                z:pos.z + (template_move.z * i),
+                t:pos.t + (template_move.t * i)
             };
             if (!isLegalMove(move, ownerPieces)) {
                 blocked = true;
@@ -77,42 +79,50 @@ function moveCorners(input, pos, owner) {
     templateMoves.push({
         x:1,
         y:1,
-        z:1
+        z:1,
+        t:0
     });
     templateMoves.push({
         x:1,
         y:1,
-        z:-1
+        z:-1,
+        t:0
     });
     templateMoves.push({
         x:-1,
         y:1,
-        z:-1
+        z:-1,
+        t:0
     });
     templateMoves.push({
         x:-1,
         y:1,
-        z:1
+        z:1,
+        t:0
     });
     templateMoves.push({
         x:1,
         y:-1,
-        z:1
+        z:1,
+        t:0
     });
     templateMoves.push({
         x:1,
         y:-1,
-        z:-1
+        z:-1,
+        t:0
     });
     templateMoves.push({
         x:-1,
         y:-1,
-        z:-1
+        z:-1,
+        t:0
     });
     templateMoves.push({
         x:-1,
         y:-1,
-        z:1
+        z:1,
+        t:0
     });
 
     return generatePositionsFromTemplates(input, pos, owner, templateMoves);
@@ -120,10 +130,10 @@ function moveCorners(input, pos, owner) {
 
 function moveKnight(input, pos, owner) {
     var moves = [];
-    var dims = ['x', 'y', 'z'];
+    var dims = ['x', 'y', 'z', 't'];
     var dindex = 0;
     // rotate through dims
-    for (dindex = 0; dindex < 3; dindex++) {
+    for (dindex = 0; dindex < 4; dindex++) {
         var current_dim = dims[dindex];
         dims
             .filter(function(dim) {
@@ -156,32 +166,38 @@ function moveSides(input, pos, owner) {
     templateMoves.push({
         x:1,
         y:0,
-        z:0
+        z:0,
+        t:0
     });
     templateMoves.push({
         x:-1,
         y:0,
-        z:0
+        z:0,
+        t:0
     });
     templateMoves.push({
         x:0,
         y:1,
-        z:0
+        z:0,
+        t:0
     });
     templateMoves.push({
         x:0,
         y:-1,
-        z:0
+        z:0,
+        t:0
     });
     templateMoves.push({
         x:0,
         y:0,
-        z:1
+        z:1,
+        t:0
     });
     templateMoves.push({
         x:0,
         y:0,
-        z:-1
+        z:-1,
+        t:0
     });
     return generatePositionsFromTemplates(input, pos, owner, templateMoves);
 }
@@ -192,63 +208,74 @@ function moveEdges(input, pos, owner) {
     template_moves.push({
         x:1,
         y:1,
-        z:0
+        z:0,
+        t:0
     });
     template_moves.push({
         x:1,
         y:-1,
-        z:0
+        z:0,
+        t:0
     });
     template_moves.push({
         x:-1,
         y:-1,
-        z:0
+        z:0,
+        t:0
     });
     template_moves.push({
         x:-1,
         y:1,
-        z:0
+        z:0,
+        t:0
     });
     template_moves.push({
         x:1,
         y:0,
-        z:1
+        z:1,
+        t:0
     });
     template_moves.push({
         x:1,
         y:0,
-        z:-1
+        z:-1,
+        t:0
     });
     template_moves.push({
         x:-1,
         y:0,
-        z:-1
+        z:-1,
+        t:0
     });
     template_moves.push({
         x:-1,
         y:0,
-        z:1
+        z:1,
+        t:0
     });
     template_moves.push({
         x:0,
         y:1,
-        z:1
+        z:1,
+        t:0
     });
     template_moves.push({
         x:0,
         y:1,
-        z:-1
+        z:-1,
+        t:0
     });
     template_moves.push({
         x:0,
         y:-1,
-        z:-1
+        z:-1,
+        t:0
     });
     template_moves.push({
         x:0,
         y:-1,
-        z:1
+        z:1,
+        t:0
     });
     return generatePositionsFromTemplates(input, pos, owner, template_moves);    
 }
-

@@ -39,6 +39,24 @@ var sphereGeometry = new THREE.SphereGeometry(0.5,32,32);
 var torusGeometry = new THREE.TorusGeometry( 0.4, 0.1, 16, 10 );
 var move_geometry = new THREE.BoxGeometry( 0.92, 0.92, 0.92);
 
+
+var dim_material = new THREE.MeshLambertMaterial( { color: 0xFFFFFF } );
+var dim_geometry = new THREE.BoxGeometry( 0.01, 0.01, 0.01);
+var dim_cubes = [0,0,0,0];
+dim_cubes[0] = new THREE.Mesh(dim_geometry, dim_material);
+dim_cubes[1] = new THREE.Mesh(dim_geometry, dim_material);
+dim_cubes[2] = new THREE.Mesh(dim_geometry, dim_material);
+dim_cubes[3] = new THREE.Mesh(dim_geometry, dim_material);
+dim_cubes[0].position.x = -3;
+dim_cubes[0].position.y = -3;
+dim_cubes[1].position.x = 3;
+dim_cubes[1].position.y = 3;
+dim_cubes[2].position.x = -3;
+dim_cubes[2].position.y = 3;
+dim_cubes[3].position.x = 3;
+dim_cubes[3].position.y = -3;
+
+
 var orange_color = 0xFF8E00;
 var blue_color = 0x00A9FF;
 var red_color = 0xFF2D30;
@@ -47,6 +65,12 @@ var white_color = 0xFFFFFF;
 var x_size = 4;
 var y_size = 4;
 var z_size = 4;
+var t_size = 1;
+
+var previousMousePosition = {
+    x: 0,
+    y: 0
+};
 
 var clientState = "not-joined";
 
@@ -83,6 +107,12 @@ function isLegalMove(actualMove, ownerPieces) {
         isLegal = false;
     }
     if (actualMove.z < 0) {
+        isLegal = false;
+    }
+    if (actualMove.t >= t_size) {
+        isLegal = false;
+    }
+    if (actualMove.t < 0) {
         isLegal = false;
     }
     ownerPieces.forEach(function(ownerPiece) {
@@ -210,14 +240,20 @@ function getCurrentGame(callback) {
     };
     createRequest.send();
 }
-
+function addMeshObject(cube, position) {
+    var dim = position.t ? position.t : 0;
+    cube.position.x = cube.position.x - 2;
+    cube.position.y = cube.position.y - 2;
+    cube.position.z = cube.position.z - 2;
+    dim_cubes[dim].add( cube );
+}
 function addMoveCube (position) {
     var cube = new THREE.Mesh( move_geometry, move_material );
     cube.position.set(
         position.x + 0.5,
         position.y + 0.5,
         position.z + 0.5);
-    scene.add( cube );
+    addMeshObject(cube, position);
     return cube;
 }
 
@@ -416,7 +452,41 @@ function onDocumentMouseMove( event ) {
     } else {
         mouseDrag = false;
     }
+    var deltaMove = {
+        x: event.offsetX - previousMousePosition.x,
+        y: event.offsetY - previousMousePosition.y
+    };
+
+    if(mouseDrag) {
+            
+        var deltaRotationQuaternion = new THREE.Quaternion()
+            .setFromEuler(new THREE.Euler(
+                toRadians(deltaMove.y * 1),
+                toRadians(deltaMove.x * 1),
+                0,
+                'XYZ'
+            ));
+        
+        dim_cubes[0].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[0].quaternion);
+        dim_cubes[1].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[1].quaternion);
+        dim_cubes[2].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[2].quaternion);
+        dim_cubes[3].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[3].quaternion);
+    }
+    
+    previousMousePosition = {
+        x: event.offsetX,
+        y: event.offsetY
+    };
 }
+
+function toRadians(angle) {
+    return angle * (Math.PI / 180);
+}
+
+function toDegrees(angle) {
+    return angle * (180 / Math.PI);
+}
+
 function onDocumentMouseDown( event ) {
     mouseDownLock = true;
     firstDownEvent = true;
@@ -503,7 +573,7 @@ function addcube (position, material, type) {
         position.x,
         position.y,
         position.z);
-    scene.add( cube );
+    addMeshObject(cube, position);
     return cube;
 }
 
@@ -518,10 +588,11 @@ function createCurrentGameVisuals(currentGame) {
         var x = currentPiece.pos.x + 0.5;
         var y = currentPiece.pos.y + 0.5;
         var z = currentPiece.pos.z + 0.5;
+        var t = currentPiece.pos.t;
         var mat_color = currentPiece.owner == "player_one" ? orange_color : blue_color;
         var mat = new THREE.MeshLambertMaterial( { color: mat_color } );
         mat.name = "" + i;
-        var obj = addcube({x:x,y:y,z:z}, mat, currentPiece.type);
+        var obj = addcube({x:x,y:y,z:z,t:t}, mat, currentPiece.type);
         obj.userData.piece = currentPiece;
         localPieces.push({
             obj : obj,
@@ -559,7 +630,7 @@ function drawSide(position, rotation, size) {
         position.z);
     mesh.isPositionCube = true;
     positionCubes.push(mesh);
-    scene.add( mesh );
+    addMeshObject(mesh, position);
 }
 
 function drawEverything(currentGame) {
@@ -573,23 +644,30 @@ function drawEverything(currentGame) {
     var full_size = currentGame.board.x;
     var half_size = full_size * 0.5;
 
-    drawSide({x:half_size,y:half_size,z:0}, {x:0,y:0,z:0}, full_size);
-    drawSide({x:half_size,y:half_size,z:full_size}, {x:180,y:0,z:0}, full_size);
-    drawSide({x:full_size,y:half_size,z:half_size}, {x:0,y:270,z:0}, full_size);
-    drawSide({x:0,y:half_size,z:half_size}, {x:0,y:90,z:0}, full_size);
-    drawSide({x:half_size,y:full_size,z:half_size}, {x:90,y:0,z:0}, full_size);
-    drawSide({x:half_size,y:0,z:half_size}, {x:270,y:0,z:0}, full_size);
+    for (var i = 0; i < currentGame.board.t; i++) {
+        drawSide({x:half_size,y:half_size,z:0,t:i}, {x:0,y:0,z:0}, full_size);
+        drawSide({x:half_size,y:half_size,z:full_size,t:i}, {x:180,y:0,z:0}, full_size);
+        drawSide({x:full_size,y:half_size,z:half_size,t:i}, {x:0,y:270,z:0}, full_size);
+        drawSide({x:0,y:half_size,z:half_size,t:i}, {x:0,y:90,z:0}, full_size);
+        drawSide({x:half_size,y:full_size,z:half_size,t:i}, {x:90,y:0,z:0}, full_size);
+        drawSide({x:half_size,y:0,z:half_size,t:i}, {x:270,y:0,z:0}, full_size);
+    }
 
     x_size = currentGame.board.x;
     y_size = currentGame.board.y;
     z_size = currentGame.board.z;
+    t_size = currentGame.board.t;
 }
 
 function startDrawing(currentGame) {
     scene = new THREE.Scene();
+    scene.add( dim_cubes[0] );
+    scene.add( dim_cubes[1] );
+    scene.add( dim_cubes[2] );
+    scene.add( dim_cubes[3] );
    // camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 500 );
     var aspect = window.innerWidth / window.innerHeight;
-    var frustumSize = 10;
+    var frustumSize = 16;
     camera = new THREE.OrthographicCamera(
         frustumSize * aspect / - 2,
         frustumSize * aspect / 2,
@@ -612,15 +690,15 @@ function startDrawing(currentGame) {
     var full_size = currentGame.board.x;
     var half_size = full_size * 0.5;
 
-    camera.position.set(half_size, half_size, 8);
+    camera.position.set(0, 0, 10);
 
-    controls = new THREE.OrbitControls( camera, renderer.domElement );
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.rotateSpeed = 0.5;
-    controls.target = new THREE.Vector3(half_size,half_size,half_size);
+    // controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // controls.enableDamping = true;
+    // controls.dampingFactor = 0.25;
+    // controls.enableZoom = false;
+    // controls.enablePan = false;
+    // controls.rotateSpeed = 0.5;
+    // controls.target = new THREE.Vector3(half_size,half_size,half_size);
 
     var light = new THREE.AmbientLight( 0x444444 ); // soft white light
     scene.add( light );
@@ -636,7 +714,7 @@ function startDrawing(currentGame) {
 
     var animate = function () {
         requestAnimationFrame( animate );
-        controls.update();
+       // controls.update();
         
         renderer.render(scene, camera);
     };
@@ -681,3 +759,5 @@ function getLatestState() {
 }
 
 setInterval(getLatestState, 1000);
+
+
