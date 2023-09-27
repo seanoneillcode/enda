@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>ENDA</title>
+        <link href="main.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <p>
+            <a href="index.html">Back to Game</a>.
+        </p>
+        <h1>ENDA</h1>
+
+        <h2>What is ENDA</h2>
+        <p>
+            A game played in a 4 dimensional space. 
+        </p>
+
+        <h2>How To Play</h2>
+
+        <p>
+            There are two players taking turns.<br />
+            The board is a 4D where pieces can be moved around.<br />
+            A piece can capture another piece by moving into the position it occupies.<br />
+            You can win the game by capturing the other player's king.<br />
+        </p>
+
+
+        <h2>Controls</h2>
+
+        <p>
+            Hold mouse left click to move the camera around
+            If it is your turn to make a move:
+            <ul>
+                <li>Select a piece by clicking on it</li>
+                <li>It will show possible move using green boxes</li>
+                <li>Click on a Green box to to move the selected piece to that position</li>
+                <li>It is now the other players turn</li>
+            </ul>
+            If a piece is red you can move the current piece into that position to capture it
+        </p>
+
+        <h2>How do I understand what I'm seeing?</h2>
+
+        <p>
+            Start with a chess board:
+            <ul>
+                <li>it is a 2D space</li>
+                <li>it has discrete positions, in that there is no half spaces. A postions must be 1 or 2, not 1.67 </li>
+                <li>it has 2 axis, ( lets call them x and y )</li>
+                <li>it has 8 places in the x axis and 8 in the y axis</li>
+            </ul>
+            
+
+            If we extend this to the 3rd dimension we just we add a new axis, z<br />
+            To represent the position in this space, we add another chess board for each position in the 3rd axis, so that's 8 chessboards.<br />
+            If we stack these chess boards, we get a chess board 'cube', which our minds are happy you work with.<br />
+            
+            <br />
+
+            To make this work with a 4th dimension we just add another axis, say, t<br />
+            To represent the position in this space, we need to add a cube for each possible value in the 4th axis, so that's 8 cubes.<br />
+            That's a lot of cubes, so we make the size of each axis, 4.<br />
+            We now have a 4 by 4 chessboard, stacked 4 times to make a chess cube, then we make 4 cubes to show the 4D position.<br />
+        </p>
+
+        <h2>Piece types and movement</h2>
+        <p>
+            There are 4 types of pieces at the moment
+            <ul>
+                <li>castle: moves like a castle in chess, any number of spaces in a single axis</li>
+                <li>bishop: moves like a bishop in chess, any number of spaces in any combination of 2 axis</li>
+                <li>king: moves like a king in chess, one space in any direction, including axis combinations ( diagonal )</li>
+                <li>knight: moves like a knight in chess, moves in 2 axis, 1 space in one axis and 2 spaces in the other, with any combination of axis ( good luck )</li>
+            </ul>
+        </p>
+
+
+        <h2>Notes:</h2>
+        <p>
+            We can make this 5D by considering 4 cubes a row, and making 4 rows. ( 16 cubes )<br />
+            We can make that 6D by considering the cube rows a column, and making 4 columns. ( 64 cubes )<br />
+            We can then make that 7D by making a cube out of the cube rows and columns, etc... but it's hard to navigate at that point<br /><br />
+
+            A piece on a chessboard only collides with another piece if they have the same postion, ie. the x and y co-ordinate is the same.<br />
+            That means for 3D the z co-ordinate must also be the same, and for 4D the rule applies in the same way.<br />
+        </p>
+
+
+
+    </body>
+</html>
