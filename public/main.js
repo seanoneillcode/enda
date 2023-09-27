@@ -72,6 +72,9 @@ var previousMousePosition = {
     y: 0
 };
 
+var pitch = 0;
+var yaw = 0;
+
 var clientState = "not-joined";
 
 function isEnemyPiece(pos, owner) {
@@ -462,19 +465,31 @@ function onDocumentMouseMove( event ) {
     };
 
     if(mouseDrag) {
-            
-        var deltaRotationQuaternion = new THREE.Quaternion()
+        
+        pitch = pitch + deltaMove.y;
+        yaw = yaw + deltaMove.x;
+
+        var identityRot = new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
+
+        var yawRot = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
-                toRadians(deltaMove.y * 1),
-                toRadians(deltaMove.x * 1),
+                0,
+                toRadians(yaw),
                 0,
                 'XYZ'
             ));
-        
-        dim_cubes[0].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[0].quaternion);
-        dim_cubes[1].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[1].quaternion);
-        dim_cubes[2].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[2].quaternion);
-        dim_cubes[3].quaternion.multiplyQuaternions(deltaRotationQuaternion, dim_cubes[3].quaternion);
+        var pitchRot = new THREE.Quaternion()
+            .setFromEuler(new THREE.Euler(
+                toRadians(pitch),
+                0,
+                0,
+                'XYZ'
+            ));
+
+        dim_cubes[0].quaternion.multiplyQuaternions(identityRot, pitchRot).multiply(yawRot);
+        dim_cubes[1].quaternion.multiplyQuaternions(identityRot, pitchRot).multiply(yawRot);
+        dim_cubes[2].quaternion.multiplyQuaternions(identityRot, pitchRot).multiply(yawRot);
+        dim_cubes[3].quaternion.multiplyQuaternions(identityRot, pitchRot).multiply(yawRot);
     }
     
     previousMousePosition = {
@@ -701,13 +716,17 @@ function startDrawing(currentGame) {
 
     camera.position.set(0, 0, 10);
 
-    // controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // controls = new THREE.OrbitControls( dim_cubes[0], renderer.domElement );
     // controls.enableDamping = true;
     // controls.dampingFactor = 0.25;
     // controls.enableZoom = false;
     // controls.enablePan = false;
     // controls.rotateSpeed = 0.5;
-    // controls.target = new THREE.Vector3(half_size,half_size,half_size);
+    // controls.target = new THREE.Vector3(
+    //     dim_cubes[0].position.x,
+    //     dim_cubes[0].position.y,
+    //     dim_cubes[0].position.z
+    //     );
 
     var light = new THREE.AmbientLight( 0x444444 ); // soft white light
     scene.add( light );
@@ -723,7 +742,7 @@ function startDrawing(currentGame) {
 
     var animate = function () {
         requestAnimationFrame( animate );
-       // controls.update();
+        // controls.update();
         
         renderer.render(scene, camera);
     };
