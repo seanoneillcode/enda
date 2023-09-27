@@ -14,16 +14,26 @@ header {
     padding: 0.5em 1em;
 }
 
-section,
+body {
+    background-color: #000000;
+    margin: 0 15%;
+}
+  
 h1 {
-/*    max-width: 1170px;
-    margin-left: auto;
-    margin-right: auto;*/
+    text-align: center;
+    font-weight: normal;
+    text-transform: uppercase;
+    border-bottom: 1px solid #57b1dc;
+    margin-top: 30px;
+}
+  
+h2 {
+    color: #04afff;
+    font-size: 1em;
 }
 
-h1 {
-    display: block;
-    color: rgba(255, 255, 255, 0.87);
+a {
+    color: #ffae00;
 }
 
 .container {
