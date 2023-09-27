@@ -467,6 +467,12 @@ function onDocumentMouseMove( event ) {
     if(mouseDrag) {
         
         pitch = pitch + deltaMove.y;
+        if (pitch < -90) {
+            pitch = -90
+        }
+        if (pitch > 90) {
+            pitch = 90
+        }
         yaw = yaw + deltaMove.x;
 
         var identityRot = new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
